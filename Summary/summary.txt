@@ -1,0 +1,2 @@
+1. It is observed that for AE, ELU is converging much faster than LeakyReLu using default setting. However, they eventually converge to similar value
+

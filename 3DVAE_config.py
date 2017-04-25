@@ -5,7 +5,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from keras.utils.visualize_util import plot
+# from keras.utils.visualize_util import plot
 from keras.models import Model
 from keras import backend as K
 from keras import objectives
