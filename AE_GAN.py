@@ -1,5 +1,12 @@
 # TO DO:
 # Add tensorflow image monitoring
+# modify load data from hdf5
+# add batch norm in vae
+# try inception in vae
+# added Enc(Dec(x)), but need Dec(z)
+# consider dropout to improve GAN
+# consider flip labels to relief gradient vanishing
+# consider use PID to balance D and G loss
 
 import keras
 from keras import backend as K
@@ -10,6 +17,7 @@ from keras.layers.advanced_activations import LeakyReLU, ELU
 from keras import objectives
 import tensorflow as tf
 from keras.callbacks import TensorBoard, ModelCheckpoint
+from keras.optimizers import Adam, SGD, RMSprop, Adadelta
 
 class VAE(object):
     def __init__(self,cfg):
@@ -29,10 +37,10 @@ class VAE(object):
         # Optimizer Parameter Setting
         self.batch_size = cfg['batch_size']
         self.epochs = cfg['max_epochs']
-        self.optimizer = cfg['optimizer']
+        self.optimizer = cfg['vae_optimizer']
         self.get_data = self.CelebA()
 
-        self.vae_model = self.def_model()
+        self.def_vae()
 
     def CelebA(self):
         '''load human face dataset'''
@@ -112,15 +120,27 @@ class VAE(object):
         kl_loss = - 0.5 * K.sum(1 + self.z_log_var - K.square(self.z_mean) - K.exp(self.z_log_var), axis=-1)
         return xent_loss + kl_loss
 
+    def encoder(self, input, n_blocks):
+        output = input
+        for block_i in range(n_blocks):
+            n_ch = self.n_filter * 2 ** block_i
+            output = self.encoder_module(output, n_ch)
+        return output
+
+    def decoder(self, input, n_blocks):
+        output = input
+        for block_i in range(n_blocks,0,-1):
+            n_ch = self.n_filter*2**(block_i-1)
+            output = self.decoder_module(output, n_ch)
+        self.x_rec = Conv2D(3, (3, 3), activation='sigmoid', padding='same')(output)
+        return output
+
     def def_vae(self):
         '''build up model'''
         n_blocks = 3 # there are n_blocks convolution and pooling structure
 
         # Encoder
-        output = self.x_input
-        for block_i in range(n_blocks):
-            n_ch = self.n_filter * 2 ** block_i
-            output = self.encoder_module(output, n_ch)
+        output = self.encoder(self.x_input, n_blocks)
 
         # FC layers
         h1 = Flatten()(output)
@@ -136,15 +156,10 @@ class VAE(object):
         h = Reshape((iterm_size , iterm_size , iterm_ch))(h3)
 
         # Decoder
-        output = h
-        for block_i in range(n_blocks,0,-1):
-            n_ch = self.n_filter*2**(block_i-1)
-            output = self.decoder_module(output, n_ch)
-        self.x_rec = Conv2D(3, (3, 3), activation='sigmoid', padding='same')(output)
+        self.x_rec = self.decoder(h, n_blocks)
 
-        vae_model = Model(self.x_input,self.x_rec)
-        vae_model.summary()
-        return vae_model
+        self.vae_model = Model(self.x_input,self.x_rec)
+        self.vae_model.summary()
 
     def train_vae(self):
         '''model training'''
@@ -192,44 +207,71 @@ class VAE(object):
 class GAN(VAE):
     def __init__(self,cfg):
         super(GAN,self).__init__(cfg)
+        self.x_input = Input(shape=(self.img_size, self.img_size, self.n_ch_in))
+        self.d_optimizer = SGD(lr=0.001, momentum=0.999, decay=0.,nesterov=False)
+        self.g_optimizer = Adam()
 
-    def nchw_to_nhwc(self, x):
-        return tf.transpose(x, [0, 2, 3, 1])
+    # def nchw_to_nhwc(self, x):
+    #     return tf.transpose(x, [0, 2, 3, 1])
+    #
+    # def norm_img(self, image, data_format=None):
+    #     image = image / 127.5 - 1.
+    #     if data_format:
+    #         image = self.to_nhwc(image, data_format)
+    #     return image
+    #
+    # def to_nhwc(self, image, data_format):
+    #     if data_format == 'NCHW':
+    #         new_image = self.nchw_to_nhwc(image)
+    #     else:
+    #         new_image = image
+    #     return new_image
 
-    def norm_img(self, image, data_format=None):
-        image = image / 127.5 - 1.
-        if data_format:
-            image = self.to_nhwc(image, data_format)
-        return image
+    def gan_loss(self, x_input, x_gen, x_gen_gen):
+        real_rec_loss = objectives.binary_crossentropy(x_input, x_gen)
+        fake_rec_loss = objectives.binary_crossentropy(x_gen, x_gen_gen)
 
-    def to_nhwc(self, image, data_format):
-        if data_format == 'NCHW':
-            new_image = self.nchw_to_nhwc(image)
-        else:
-            new_image = image
-        return new_image
+        return real_rec_loss, fake_rec_loss
 
     def train_gan(self):
-        (x_train, y_train), (x_test, y_test) = self.get_data
 
-        x = self.norm_img(x_train)
+        # x = self.norm_img(x_train)
+        # self.z = tf.random_uniform(
+        #     (tf.shape(x)[0], self.z_num), minval=-1.0, maxval=1.0)
+        # self.decoder(z)
+        # self.k_t = tf.Variable(0., trainable=False, name='k_t')
 
-        self.z = tf.random_uniform(
-            (tf.shape(x)[0], self.z_num), minval=-1.0, maxval=1.0)
-        self.k_t = tf.Variable(0., trainable=False, name='k_t')
+        self.x_gen = self.vae_model.predict(self.x_input)
+        self.x_gen_gen = self.vae_model.predict(self.x_gen)
+        self.gan_model = Model(self.x_input, self.x_gen_gen)
 
-        G, self.G_var = GeneratorCNN(
-            self.z, self.conv_hidden_num, self.channel,
-            self.repeat_num, self.data_format, reuse=False)
+        self.d_loss_real = K.mean(K.abs(self.x_input - self.x_gen))
+        self.d_loss_fake = K.mean(K.abs(self.x_gen - self.x_gen_gen))
+        self.k_t = 1 # will be modified into PID controller in the future
+        self.d_loss = self.d_loss_real - self.k_t * self.d_loss_fake
+        self.g_loss = self.d_loss_fake
 
-        d_out, self.D_z, self.D_var = DiscriminatorCNN(
-            tf.concat([G, x], 0), self.channel, self.z_num, self.repeat_num,
-            self.conv_hidden_num, self.data_format)
-        AE_G, AE_x = tf.split(d_out, 2)
+        self.gan_model.compile(loss=self.d_loss, optimizer=self.d_optimizer)
+        self.gan_model.compile(loss=self.g_loss, optimizer=self.g_optimizer)
+        self.gan_model.fit_generator(self.myGenerator(), show_accuracy=True,
+                            callbacks=[], validation_data=None, class_weight=None, nb_worker=1)
 
-        self.G = denorm_img(G, self.data_format)
-        self.AE_G, self.AE_x = denorm_img(AE_G, self.data_format), denorm_img(AE_x, self.data_format)
 
+    def myGenerator(self):
+        (X_train, y_train), (X_test, y_test) = self.get_data
+        n_iteration = len(X_train)/self.batch_size
+        while 1:
+            for i in range(n_iteration): # 1875 * 32 = 60000 -> # of training samples
+                # if i%125==0:
+                #     print "i = " + str(i)
+                yield X_train[i*self.batch_size:(i+1)*self.batch_size], y_train[i*self.batch_size:(i+1)*self.batch_size]
+
+def make_trainable(net, val):
+    '''Freeze weights in the discriminator for stacked training'''
+    # https://github.com/osh/KerasGAN/blob/master/MNIST_CNN_GAN_v2.ipynb
+    net.trainable = val
+    for l in net.layers:
+        l.trainable = val
 
 if __name__ == "__main__":
 
@@ -240,16 +282,20 @@ if __name__ == "__main__":
            'n_filters': 16,
            'filter_size': (3,3),
            # 'n_classes': 10,
-           'max_epochs': 30,
+           'max_epochs': 100,
            'latent_dim': 100,
-           'optimizer': 'adadelta',
+           'vae_optimizer': 'adadelta',
+           'g_optimizer': 'adam',
+           'd_optimizer': 'sgd',
            # 'learning_rate': lr_schedule,
            'vae': True,
            }
-    gan = GAN(cfg)
+    # gan = GAN(cfg)
+    # gan.train_gan()
     vae = VAE(cfg)
-    vae.train_model()
-    vae.test_model()
+    vae.train_vae()
+    vae.vae_model.save('my_model.h5')
+    # vae.test_model()
 
 
 
