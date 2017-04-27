@@ -50,8 +50,83 @@ class MyLayer(Layer):
     def compute_output_shape(self, input_shape):
         return (input_shape[0], self.output_dim)
 
+def test_vae(vae, fn):
+    vae.vae_model.load_weights(fn)
+    (_, _), (x_test, y_test) = vae.get_data
+    x_rec = vae.vae_model.predict(x_test)
+    save_image( x_test, x_rec)
+
+def plt_rec(x_test, x_rec):
+            import matplotlib.pyplot as plt
+            n = 10
+            plt.figure(figsize=(20, 4))
+            for i in range(n):
+                # display original
+                ax = plt.subplot(2, n, i + 1)
+                plt.imshow(x_test[i].reshape(64, 64, 3))
+                ax.get_xaxis().set_visible(False)
+                ax.get_yaxis().set_visible(False)
+                ax = plt.subplot(2, n, i + n + 1)
+
+                # display reconstruction
+                plt.imshow(x_rec[i].reshape(64, 64, 3))
+                ax.get_xaxis().set_visible(False)
+                ax.get_yaxis().set_visible(False)
+            plt.show()
+
+def make_grid(tensor, nrow=8, padding=2,
+              normalize=False, scale_each=False):
+    """Code based on https://github.com/pytorch/vision/blob/master/torchvision/utils.py"""
+    nmaps = tensor.shape[0]
+    xmaps = min(nrow, nmaps)
+    ymaps = int(math.ceil(float(nmaps) / xmaps))
+    height, width = int(tensor.shape[1] + padding), int(tensor.shape[2] + padding)
+    grid = np.zeros([height * ymaps + 1 + padding // 2, width * xmaps + 1 + padding // 2, 3], dtype=np.uint8)
+    k = 0
+    for y in range(ymaps):
+        for x in range(xmaps):
+            if k >= nmaps:
+                break
+            h, h_width = y * height + 1 + padding // 2, height - padding
+            w, w_width = x * width + 1 + padding // 2, width - padding
+
+            grid[h:h+h_width, w:w+w_width] = tensor[k]
+            k = k + 1
+    return grid
+
+def save_image(tensor, filename, nrow=8, padding=2,
+               normalize=False, scale_each=False):
+    """code from on BEGAN"""
+    ndarr = make_grid(tensor, nrow=nrow, padding=padding,
+                            normalize=normalize, scale_each=scale_each)
+    im = Image.fromarray(ndarr)
+    im.save(filename)
+
+def concat(args):
+    '''keras tensor concatenation'''
+    x, y = args
+    return tf.concat([x,y],axis=3)
+
+def save_config(config):
+    """code from BEGAN"""
+    param_path = os.path.join(config.model_dir, "params.json")
+
+    print("[*] MODEL dir: %s" % config.model_dir)
+    print("[*] PARAM path: %s" % param_path)
+
+    with open(param_path, 'w') as fp:
+        json.dump(config.__dict__, fp, indent=4, sort_keys=True)
+
+def make_trainable(net, val):
+    '''Freeze weights in the discriminator for stacked training'''
+    # https://github.com/osh/KerasGAN/blob/master/MNIST_CNN_GAN_v2.ipynb
+    net.trainable = val
+    for l in net.layers:
+        l.trainable = val
+
+
 class VAE(object):
-    def __init__(self,cfg):
+    def __init__(self, cfg):
         self.variational = cfg['vae']
 
         # Network Parameter Setting
@@ -195,7 +270,7 @@ class VAE(object):
 
         return x_rec
 
-    def train_vae(self):
+    def train_vae(self, **kwargs):
         '''model training'''
         self.vae_model.summary()
 
@@ -206,8 +281,14 @@ class VAE(object):
 
         monitor = [TensorBoard(log_dir='./logs'),
                    ModelCheckpoint(filepath='./model/VAE.{epoch:02d}-{val_loss:.3f}.hdf5', mode='auto')]
+
+        epochs = self.epochs
+        for name, value in kwargs.items():
+            if name=='epochs':
+                epochs = value # overwrite in case of pretraining
+
         self.vae_model.fit(self.X_train, self.X_train, shuffle=True,
-                      epochs=self.epochs,
+                      epochs=epochs,
                       batch_size=self.batch_size,
                       validation_data=(self.X_test, self.X_test),
                       callbacks = monitor)
@@ -233,65 +314,6 @@ class VAE(object):
                 os.makedirs(path)
         return log_dir, model_dir
 
-
-def test_vae(vae, fn):
-    vae.vae_model.load_weights(fn)
-    (_, _), (x_test, y_test) = vae.get_data
-    x_rec = vae.vae_model.predict(x_test)
-    save_image( x_test, x_rec)
-
-def plt_rec(x_test, x_rec):
-            import matplotlib.pyplot as plt
-            n = 10
-            plt.figure(figsize=(20, 4))
-            for i in range(n):
-                # display original
-                ax = plt.subplot(2, n, i + 1)
-                plt.imshow(x_test[i].reshape(64, 64, 3))
-                ax.get_xaxis().set_visible(False)
-                ax.get_yaxis().set_visible(False)
-                ax = plt.subplot(2, n, i + n + 1)
-
-                # display reconstruction
-                plt.imshow(x_rec[i].reshape(64, 64, 3))
-                ax.get_xaxis().set_visible(False)
-                ax.get_yaxis().set_visible(False)
-            plt.show()
-
-def make_grid(tensor, nrow=8, padding=2,
-              normalize=False, scale_each=False):
-    """Code based on https://github.com/pytorch/vision/blob/master/torchvision/utils.py"""
-    nmaps = tensor.shape[0]
-    xmaps = min(nrow, nmaps)
-    ymaps = int(math.ceil(float(nmaps) / xmaps))
-    height, width = int(tensor.shape[1] + padding), int(tensor.shape[2] + padding)
-    grid = np.zeros([height * ymaps + 1 + padding // 2, width * xmaps + 1 + padding // 2, 3], dtype=np.uint8)
-    k = 0
-    for y in range(ymaps):
-        for x in range(xmaps):
-            if k >= nmaps:
-                break
-            h, h_width = y * height + 1 + padding // 2, height - padding
-            w, w_width = x * width + 1 + padding // 2, width - padding
-
-            grid[h:h+h_width, w:w+w_width] = tensor[k]
-            k = k + 1
-    return grid
-
-def save_image(tensor, filename, nrow=8, padding=2,
-               normalize=False, scale_each=False):
-    """code from on BEGAN"""
-    ndarr = make_grid(tensor, nrow=nrow, padding=padding,
-                            normalize=normalize, scale_each=scale_each)
-    im = Image.fromarray(ndarr)
-    im.save(filename)
-
-def concat(args):
-    '''keras tensor concatenation'''
-    x, y = args
-    return tf.concat([x,y],axis=3)
-
-
 class GAN(VAE):
     def __init__(self,cfg):
         super(GAN,self).__init__(cfg)
@@ -309,6 +331,9 @@ class GAN(VAE):
         self.x_rec = self.def_vae(self.x_input)
         # x_rec_rec = self.def_vae(x_rec) # This will creat another set of new layers
         self.x_rec_rec = Lambda(self.def_vae, output_shape=(self.img_size,self.img_size,self.n_ch_in))(self.x_rec)
+
+        if cfg['pre_train']:
+            self.train_vae(epochs=5)
 
     def d_loss(self, args):
         x_input, x_rec, x_rec_rec = args
@@ -364,6 +389,7 @@ class GAN(VAE):
                 self.d_net.train_on_batch(x_train, x_train)
                 self.g_net.train_on_batch(x_train, x_train)
 
+            # output training result
             x_rec = self.vae_model.predict(x_train)
             x_rec_rec = self.vae_model.predict(x_rec)
             d_loss_real, d_loss_fake = np.mean(np.abs(x_train - x_rec)), np.mean(np.abs(x_rec_rec - x_rec))
@@ -383,23 +409,6 @@ class GAN(VAE):
             save_image(all_G_z, '{}/epoch_{}.png'.format(self.logdir, e))
             self.g_net.save('{}/epoch_{}.h5'.format(self.modeldir, e))
 
-def save_config(config):
-    """code from BEGAN"""
-    param_path = os.path.join(config.model_dir, "params.json")
-
-    print("[*] MODEL dir: %s" % config.model_dir)
-    print("[*] PARAM path: %s" % param_path)
-
-    with open(param_path, 'w') as fp:
-        json.dump(config.__dict__, fp, indent=4, sort_keys=True)
-
-def make_trainable(net, val):
-    '''Freeze weights in the discriminator for stacked training'''
-    # https://github.com/osh/KerasGAN/blob/master/MNIST_CNN_GAN_v2.ipynb
-    net.trainable = val
-    for l in net.layers:
-        l.trainable = val
-
 if __name__ == "__main__":
 
     cfg = {'batch_size': 64,
@@ -416,8 +425,9 @@ if __name__ == "__main__":
            'g_optimizer': 'adam',
            'd_optimizer': 'sgd',
            # 'learning_rate': lr_schedule,
-           'vae': False,
+           'vae': True,
            'datadir': '/home/hope-yao/Documents/Data',
+           'pre_train': True,
            }
 
     # vae = VAE(cfg)
