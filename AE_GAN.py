@@ -1,12 +1,15 @@
 # TO DO:
 # Add tensorflow image monitoring
-# modify load data from hdf5
-# add batch norm in vae
-# try inception in vae
+# load data in batch to reduce gpu memory consumption
 # added Enc(Dec(x)), but need Dec(z)
+
+# add batch norm in vae
 # consider dropout to improve GAN
 # consider flip labels to relief gradient vanishing
 # consider use PID to balance D and G loss
+# try inception in vae
+# Maybe pre-train GAN using VAE?
+# crossentropy loss v.s. l1 norm in VAE loss?
 
 import keras
 from keras import backend as K
@@ -18,6 +21,26 @@ from keras import objectives
 import tensorflow as tf
 from keras.callbacks import TensorBoard, ModelCheckpoint
 from keras.optimizers import Adam, SGD, RMSprop, Adadelta
+from keras.engine.topology import Layer
+
+class MyLayer(Layer):
+
+    def __init__(self, output_dim, **kwargs):
+        self.output_dim = output_dim
+        super(MyLayer, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        # Create a trainable weight variable for this layer.
+        self.kernel = self.add_weight(shape=(input_shape[1], self.output_dim),
+                                      initializer='uniform',
+                                      trainable=True)
+        super(MyLayer, self).build(input_shape)  # Be sure to call this somewhere!
+
+    def call(self, x):
+        return K.dot(x, self.kernel)
+
+    def compute_output_shape(self, input_shape):
+        return (input_shape[0], self.output_dim)
 
 class VAE(object):
     def __init__(self,cfg):
@@ -30,7 +53,7 @@ class VAE(object):
         self.filter_size = cfg['filter_size']
         self.img_size = cfg['input_dim'][0]
         self.n_ch_in = cfg['n_channels']
-        self.x_input = Input(shape=(self.img_size, self.img_size, self.n_ch_in))
+        self.n_attributes = cfg['n_attributes']
         self.encoder_module = self.basic_enc_conv_module
         self.decoder_module = self.basic_dec_conv_module
 
@@ -40,7 +63,10 @@ class VAE(object):
         self.optimizer = cfg['vae_optimizer']
         self.get_data = self.CelebA()
 
-        self.def_vae()
+        # define VAE network
+        self.x_input = Input(shape=(self.img_size, self.img_size, self.n_ch_in))
+        self.x_rec = self.def_vae(self.x_input)
+        self.vae_model = Model(inputs=self.x_input, outputs=self.x_rec)
 
     def CelebA(self):
         '''load human face dataset'''
@@ -132,15 +158,15 @@ class VAE(object):
         for block_i in range(n_blocks,0,-1):
             n_ch = self.n_filter*2**(block_i-1)
             output = self.decoder_module(output, n_ch)
-        self.x_rec = Conv2D(3, (3, 3), activation='sigmoid', padding='same')(output)
+        output = Conv2D(3, (3, 3), activation='sigmoid', padding='same')(output)
         return output
 
-    def def_vae(self):
+    def def_vae(self,x_input):
         '''build up model'''
         n_blocks = 3 # there are n_blocks convolution and pooling structure
 
         # Encoder
-        output = self.encoder(self.x_input, n_blocks)
+        output = self.encoder(x_input, n_blocks)
 
         # FC layers
         h1 = Flatten()(output)
@@ -156,13 +182,14 @@ class VAE(object):
         h = Reshape((iterm_size , iterm_size , iterm_ch))(h3)
 
         # Decoder
-        self.x_rec = self.decoder(h, n_blocks)
+        x_rec = self.decoder(h, n_blocks)
 
-        self.vae_model = Model(self.x_input,self.x_rec)
-        self.vae_model.summary()
+        return x_rec
 
     def train_vae(self):
         '''model training'''
+        self.vae_model.summary()
+
         if ~self.variational:
             self.vae_model.compile(optimizer=self.optimizer, loss=self.ae_loss)
         else:
@@ -170,101 +197,122 @@ class VAE(object):
         (x_train, y_train), (x_test, y_test) = self.get_data
 
         monitor = [TensorBoard(log_dir='./logs'),
-                   ModelCheckpoint(filepath='./model/weights.{epoch:02d}-{val_loss:.3f}.hdf5', mode='auto')]
+                   ModelCheckpoint(filepath='./model/VAE.{epoch:02d}-{val_loss:.3f}.hdf5', mode='auto')]
         self.vae_model.fit(x_train, x_train, shuffle=True,
                       epochs=self.epochs,
                       batch_size=self.batch_size,
                       validation_data=(x_test, x_test),
                       callbacks = monitor)
+        # self.vae_model.fit_generator(self.myGenerator(),steps_per_epoch=1000)
         return self.vae_model
 
-    def test_vae(self):
-        from keras.models import load_model
-        vae = load_model('vae_celeba.h5', custom_objects={'vae_loss': self.vae_loss})
-        (x_train, y_train), (x_test, y_test) = self.get_data
-        x_rec = vae.predict(x_test)
-        self.plt_rec(x_test,x_rec)
+    def myGenerator(self):
+        (X_train, y_train), (X_test, y_test) = self.get_data
+        n_iteration = len(X_train) / self.batch_size
+        while 1:
+            for i in range(n_iteration):  # 1875 * 32 = 60000 -> # of training samples
+                yield X_train[i * self.batch_size:(i + 1) * self.batch_size],X_train[i * self.batch_size:(i + 1) * self.batch_size]
+                # if i%125==0:
+                #     print "i = " + str(i)
+                # yield X_train[i * self.batch_size:(i + 1) * self.batch_size], y_train[
+                #                                                               i * self.batch_size:(i + 1) * self.batch_size]
 
-    def plt_rec(self, x_test, x_rec):
-        import matplotlib.pyplot as plt
-        n = 10
-        plt.figure(figsize=(20, 4))
-        for i in range(n):
-            # display original
-            ax = plt.subplot(2, n, i + 1)
-            plt.imshow(x_test[i].reshape(64, 64, 3))
-            ax.get_xaxis().set_visible(False)
-            ax.get_yaxis().set_visible(False)
-            ax = plt.subplot(2, n, i + n + 1)
 
-            # display reconstruction
-            plt.imshow(x_rec[i].reshape(64, 64, 3))
-            ax.get_xaxis().set_visible(False)
-            ax.get_yaxis().set_visible(False)
-        plt.show()
+def test_vae(vae, fn):
+    vae.vae_model.load_weights(fn)
+    (_, _), (x_test, y_test) = vae.get_data
+    x_rec = vae.vae_model.predict(x_test)
 
+    def plt_rec( x_test, x_rec):
+            import matplotlib.pyplot as plt
+            n = 10
+            plt.figure(figsize=(20, 4))
+            for i in range(n):
+                # display original
+                ax = plt.subplot(2, n, i + 1)
+                plt.imshow(x_test[i].reshape(64, 64, 3))
+                ax.get_xaxis().set_visible(False)
+                ax.get_yaxis().set_visible(False)
+                ax = plt.subplot(2, n, i + n + 1)
+
+                # display reconstruction
+                plt.imshow(x_rec[i].reshape(64, 64, 3))
+                ax.get_xaxis().set_visible(False)
+                ax.get_yaxis().set_visible(False)
+            plt.show()
+
+    plt_rec(x_test, x_rec)
+
+def concat(args):
+    '''keras tensor concatenation'''
+    x, y = args
+    return tf.concat([x,y],axis=3)
 
 class GAN(VAE):
     def __init__(self,cfg):
         super(GAN,self).__init__(cfg)
+
         self.x_input = Input(shape=(self.img_size, self.img_size, self.n_ch_in))
+        self.y_input = Input(shape=(self.n_attributes,))
         self.d_optimizer = SGD(lr=0.001, momentum=0.999, decay=0.,nesterov=False)
         self.g_optimizer = Adam()
 
-    # def nchw_to_nhwc(self, x):
-    #     return tf.transpose(x, [0, 2, 3, 1])
-    #
-    # def norm_img(self, image, data_format=None):
-    #     image = image / 127.5 - 1.
-    #     if data_format:
-    #         image = self.to_nhwc(image, data_format)
-    #     return image
-    #
-    # def to_nhwc(self, image, data_format):
-    #     if data_format == 'NCHW':
-    #         new_image = self.nchw_to_nhwc(image)
-    #     else:
-    #         new_image = image
-    #     return new_image
+        self.x_rec, self.x_rec_rec = self.def_gan(self.x_input)
+        self.gan_model = Model(inputs=[self.x_input, self.y_input], outputs=[self.x_rec, self.x_rec_rec])
 
-    def gan_loss(self, x_input, x_gen, x_gen_gen):
-        real_rec_loss = objectives.binary_crossentropy(x_input, x_gen)
-        fake_rec_loss = objectives.binary_crossentropy(x_gen, x_gen_gen)
+    def d_loss(self, args):
+        x_input, x_rec, x_rec_rec = args
 
-        return real_rec_loss, fake_rec_loss
+        def get_d_loss(x_input, y_input):
+            # real_rec_loss = objectives.binary_crossentropy(x_input, x_gen)
+            # fake_rec_loss = objectives.binary_crossentropy(x_gen, x_gen_gen)
+            d_loss_real = tf.reduce_mean(tf.abs(x_input - x_rec))
+            d_loss_fake = tf.reduce_mean(tf.abs(x_rec - x_rec_rec))
+            k_t = 1 # will be modified into PID controller in the future
+            d_loss = d_loss_real - k_t * d_loss_fake
+            return d_loss
 
-    def train_gan(self):
+        return get_d_loss
 
+    def g_loss(self, args):
+        x_input, x_rec, x_rec_rec = args
+
+        def get_g_loss(x_input, y_input):
+            d_loss_fake = tf.reduce_mean(tf.abs(x_rec - x_rec_rec))
+            g_loss = d_loss_fake
+            return g_loss
+
+        return get_g_loss
+
+    def def_gan(self,x_input):
         # x = self.norm_img(x_train)
         # self.z = tf.random_uniform(
         #     (tf.shape(x)[0], self.z_num), minval=-1.0, maxval=1.0)
         # self.decoder(z)
         # self.k_t = tf.Variable(0., trainable=False, name='k_t')
 
-        self.x_gen = self.vae_model.predict(self.x_input)
-        self.x_gen_gen = self.vae_model.predict(self.x_gen)
-        self.gan_model = Model(self.x_input, self.x_gen_gen)
+        x_rec = self.def_vae(x_input)
+        # x_rec_rec = self.def_vae(x_rec) # This will creat another set of new layers
+        x_rec_rec = Lambda(self.def_vae, output_shape=(self.img_size,self.img_size,self.n_ch_in))(x_rec)
 
-        self.d_loss_real = K.mean(K.abs(self.x_input - self.x_gen))
-        self.d_loss_fake = K.mean(K.abs(self.x_gen - self.x_gen_gen))
-        self.k_t = 1 # will be modified into PID controller in the future
-        self.d_loss = self.d_loss_real - self.k_t * self.d_loss_fake
-        self.g_loss = self.d_loss_fake
+        return x_rec, x_rec_rec
 
-        self.gan_model.compile(loss=self.d_loss, optimizer=self.d_optimizer)
-        self.gan_model.compile(loss=self.g_loss, optimizer=self.g_optimizer)
-        self.gan_model.fit_generator(self.myGenerator(), show_accuracy=True,
-                            callbacks=[], validation_data=None, class_weight=None, nb_worker=1)
+    def train_gan(self):
+        self.gan_model.summary()
 
+        self.gan_model.compile(loss=[self.g_loss([self.x_input, self.x_rec, self.x_rec_rec]),self.d_loss([self.x_input, self.x_rec, self.x_rec_rec])], optimizer=self.g_optimizer)
+        # self.gan_model.compile(loss=self.d_loss([self.x_input, self.x_rec, self.x_rec_rec]), optimizer=self.g_optimizer)
 
-    def myGenerator(self):
-        (X_train, y_train), (X_test, y_test) = self.get_data
-        n_iteration = len(X_train)/self.batch_size
-        while 1:
-            for i in range(n_iteration): # 1875 * 32 = 60000 -> # of training samples
-                # if i%125==0:
-                #     print "i = " + str(i)
-                yield X_train[i*self.batch_size:(i+1)*self.batch_size], y_train[i*self.batch_size:(i+1)*self.batch_size]
+        (x_train, y_train), (x_test, y_test) = self.get_data
+        monitor = [TensorBoard(log_dir='./logs'),
+                   ModelCheckpoint(filepath='./model/GAN.{epoch:02d}-{val_loss:.3f}.hdf5', mode='auto')]
+        self.gan_model.fit([x_train, y_train], [x_train,x_train], shuffle=True,
+                      epochs=self.epochs,
+                      batch_size=self.batch_size,
+                      validation_data=([x_test, y_test], [x_test, x_test]),
+                      callbacks = monitor)
+        return self.gan_model
+
 
 def make_trainable(net, val):
     '''Freeze weights in the discriminator for stacked training'''
@@ -279,6 +327,7 @@ if __name__ == "__main__":
            'act_func': 'ELU', #ELU, LeakyReLu
            'input_dim': (64, 64),
            'n_channels': 3,
+           'n_attributes': 40,
            'n_filters': 16,
            'filter_size': (3,3),
            # 'n_classes': 10,
@@ -288,14 +337,17 @@ if __name__ == "__main__":
            'g_optimizer': 'adam',
            'd_optimizer': 'sgd',
            # 'learning_rate': lr_schedule,
-           'vae': True,
+           'vae': False,
            }
-    # gan = GAN(cfg)
-    # gan.train_gan()
-    vae = VAE(cfg)
-    vae.train_vae()
-    vae.vae_model.save('my_model.h5')
-    # vae.test_model()
+
+    # vae = VAE(cfg)
+    # vae.train_vae()
+    # # vae.vae_model.save('my_model.h5')
+    # test_vae(vae,'./result/AE.99-0.501.hdf5')
+
+    gan = GAN(cfg)
+    gan.train_gan()
+
 
 
 
