@@ -22,6 +22,14 @@ import tensorflow as tf
 from keras.callbacks import TensorBoard, ModelCheckpoint
 from keras.optimizers import Adam, SGD, RMSprop, Adadelta
 from keras.engine.topology import Layer
+from tqdm import tqdm
+import os
+import dateutil.tz
+import datetime
+import math
+import numpy as np
+from PIL import Image
+import json
 
 class MyLayer(Layer):
 
@@ -54,6 +62,7 @@ class VAE(object):
         self.img_size = cfg['input_dim'][0]
         self.n_ch_in = cfg['n_channels']
         self.n_attributes = cfg['n_attributes']
+        self.datadir = cfg['datadir']
         self.encoder_module = self.basic_enc_conv_module
         self.decoder_module = self.basic_dec_conv_module
 
@@ -61,19 +70,19 @@ class VAE(object):
         self.batch_size = cfg['batch_size']
         self.epochs = cfg['max_epochs']
         self.optimizer = cfg['vae_optimizer']
-        self.get_data = self.CelebA()
 
         # define VAE network
         self.x_input = Input(shape=(self.img_size, self.img_size, self.n_ch_in))
         self.x_rec = self.def_vae(self.x_input)
         self.vae_model = Model(inputs=self.x_input, outputs=self.x_rec)
+        (self.X_train, self.y_train), (self.X_test, self.y_test) = self.CelebA(self.datadir)
 
-    def CelebA(self):
+    def CelebA(self, datadir):
         '''load human face dataset'''
         import h5py
         from random import sample
         import numpy as np
-        f = h5py.File("/home/hope-yao/Documents/Data/celeba.hdf5", "r")
+        f = h5py.File(datadir+"/celeba.hdf5", "r")
         data_key = f.keys()[0]
         data = np.asarray(f[data_key],dtype='float32') / 255.
         data = data.transpose((0,2,3,1))
@@ -90,8 +99,8 @@ class VAE(object):
         x_train = np.delete(data, indices, 0)
         y_train = np.delete(label, indices, 0)
 
-        return (x_train, y_train), (x_test, y_test)
-        # return (x_train[0:10000], y_train[0:10000]), (x_test[0:1000], y_test[0:1000])
+        # return (x_train, y_train), (x_test, y_test)
+        return (x_train[0:10000], y_train[0:10000]), (x_test[0:1000], y_test[0:1000])
 
     def Inception_module(self, input_img):
         tower_1 = Conv2D(32, (1, 1), padding='same', activation='relu')(input_img)
@@ -194,36 +203,44 @@ class VAE(object):
             self.vae_model.compile(optimizer=self.optimizer, loss=self.ae_loss)
         else:
             self.vae_model.compile(optimizer=self.optimizer, loss=self.vae_loss)
-        (x_train, y_train), (x_test, y_test) = self.get_data
 
         monitor = [TensorBoard(log_dir='./logs'),
                    ModelCheckpoint(filepath='./model/VAE.{epoch:02d}-{val_loss:.3f}.hdf5', mode='auto')]
-        self.vae_model.fit(x_train, x_train, shuffle=True,
+        self.vae_model.fit(self.X_train, self.X_train, shuffle=True,
                       epochs=self.epochs,
                       batch_size=self.batch_size,
-                      validation_data=(x_test, x_test),
+                      validation_data=(self.X_test, self.X_test),
                       callbacks = monitor)
         # self.vae_model.fit_generator(self.myGenerator(),steps_per_epoch=1000)
         return self.vae_model
 
-    def myGenerator(self):
-        (X_train, y_train), (X_test, y_test) = self.get_data
-        n_iteration = len(X_train) / self.batch_size
-        while 1:
-            for i in range(n_iteration):  # 1875 * 32 = 60000 -> # of training samples
-                yield X_train[i * self.batch_size:(i + 1) * self.batch_size],X_train[i * self.batch_size:(i + 1) * self.batch_size]
-                # if i%125==0:
-                #     print "i = " + str(i)
-                # yield X_train[i * self.batch_size:(i + 1) * self.batch_size], y_train[
-                #                                                               i * self.batch_size:(i + 1) * self.batch_size]
+    def creat_dir(self,network_type):
+        """code from on InfoGAN"""
+        now = datetime.datetime.now(dateutil.tz.tzlocal())
+        timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
+        root_log_dir = "logs/" + network_type
+        exp_name = network_type + "_%s" % timestamp
+        log_dir = os.path.join(root_log_dir, exp_name)
+
+        now = datetime.datetime.now(dateutil.tz.tzlocal())
+        timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
+        root_model_dir = "models/" + network_type
+        exp_name = network_type + "_%s" % timestamp
+        model_dir = os.path.join(root_model_dir, exp_name)
+
+        for path in [log_dir, model_dir]:
+            if not os.path.exists(path):
+                os.makedirs(path)
+        return log_dir, model_dir
 
 
 def test_vae(vae, fn):
     vae.vae_model.load_weights(fn)
     (_, _), (x_test, y_test) = vae.get_data
     x_rec = vae.vae_model.predict(x_test)
+    save_image( x_test, x_rec)
 
-    def plt_rec( x_test, x_rec):
+def plt_rec(x_test, x_rec):
             import matplotlib.pyplot as plt
             n = 10
             plt.figure(figsize=(20, 4))
@@ -241,29 +258,62 @@ def test_vae(vae, fn):
                 ax.get_yaxis().set_visible(False)
             plt.show()
 
-    plt_rec(x_test, x_rec)
+def make_grid(tensor, nrow=8, padding=2,
+              normalize=False, scale_each=False):
+    """Code based on https://github.com/pytorch/vision/blob/master/torchvision/utils.py"""
+    nmaps = tensor.shape[0]
+    xmaps = min(nrow, nmaps)
+    ymaps = int(math.ceil(float(nmaps) / xmaps))
+    height, width = int(tensor.shape[1] + padding), int(tensor.shape[2] + padding)
+    grid = np.zeros([height * ymaps + 1 + padding // 2, width * xmaps + 1 + padding // 2, 3], dtype=np.uint8)
+    k = 0
+    for y in range(ymaps):
+        for x in range(xmaps):
+            if k >= nmaps:
+                break
+            h, h_width = y * height + 1 + padding // 2, height - padding
+            w, w_width = x * width + 1 + padding // 2, width - padding
+
+            grid[h:h+h_width, w:w+w_width] = tensor[k]
+            k = k + 1
+    return grid
+
+def save_image(tensor, filename, nrow=8, padding=2,
+               normalize=False, scale_each=False):
+    """code from on BEGAN"""
+    ndarr = make_grid(tensor, nrow=nrow, padding=padding,
+                            normalize=normalize, scale_each=scale_each)
+    im = Image.fromarray(ndarr)
+    im.save(filename)
 
 def concat(args):
     '''keras tensor concatenation'''
     x, y = args
     return tf.concat([x,y],axis=3)
 
+
 class GAN(VAE):
     def __init__(self,cfg):
         super(GAN,self).__init__(cfg)
 
+        # Working and saving dir
+        self.network_type = 'GAN'
+        self.logdir,self.modeldir = self.creat_dir(self.network_type)
+
+        # Network parameters for GAN
         self.x_input = Input(shape=(self.img_size, self.img_size, self.n_ch_in))
         self.y_input = Input(shape=(self.n_attributes,))
         self.d_optimizer = SGD(lr=0.001, momentum=0.999, decay=0.,nesterov=False)
         self.g_optimizer = Adam()
 
-        self.x_rec, self.x_rec_rec = self.def_gan(self.x_input)
-        self.gan_model = Model(inputs=[self.x_input, self.y_input], outputs=[self.x_rec, self.x_rec_rec])
+        self.x_rec = self.def_vae(self.x_input)
+        # x_rec_rec = self.def_vae(x_rec) # This will creat another set of new layers
+        self.x_rec_rec = Lambda(self.def_vae, output_shape=(self.img_size,self.img_size,self.n_ch_in))(self.x_rec)
 
     def d_loss(self, args):
         x_input, x_rec, x_rec_rec = args
 
-        def get_d_loss(x_input, y_input):
+        def get_d_loss(self,x_input):
             # real_rec_loss = objectives.binary_crossentropy(x_input, x_gen)
             # fake_rec_loss = objectives.binary_crossentropy(x_gen, x_gen_gen)
             d_loss_real = tf.reduce_mean(tf.abs(x_input - x_rec))
@@ -277,42 +327,71 @@ class GAN(VAE):
     def g_loss(self, args):
         x_input, x_rec, x_rec_rec = args
 
-        def get_g_loss(x_input, y_input):
+        def get_g_loss(self,x_input):
             d_loss_fake = tf.reduce_mean(tf.abs(x_rec - x_rec_rec))
             g_loss = d_loss_fake
             return g_loss
 
         return get_g_loss
 
-    def def_gan(self,x_input):
-        # x = self.norm_img(x_train)
-        # self.z = tf.random_uniform(
-        #     (tf.shape(x)[0], self.z_num), minval=-1.0, maxval=1.0)
-        # self.decoder(z)
-        # self.k_t = tf.Variable(0., trainable=False, name='k_t')
-
-        x_rec = self.def_vae(x_input)
-        # x_rec_rec = self.def_vae(x_rec) # This will creat another set of new layers
-        x_rec_rec = Lambda(self.def_vae, output_shape=(self.img_size,self.img_size,self.n_ch_in))(x_rec)
-
-        return x_rec, x_rec_rec
+    # def def_gan(self,x_input):
+    #     # x = self.norm_img(x_train)
+    #     # self.z = tf.random_uniform(
+    #     #     (tf.shape(x)[0], self.z_num), minval=-1.0, maxval=1.0)
+    #     # self.decoder(z)
+    #     # self.k_t = tf.Variable(0., trainable=False, name='k_t')
+    #
+    #     x_rec = self.def_vae(x_input)
+    #     # x_rec_rec = self.def_vae(x_rec) # This will creat another set of new layers
+    #     x_rec_rec = Lambda(self.def_vae, output_shape=(self.img_size,self.img_size,self.n_ch_in))(x_rec)
+    #
+    #     return x_rec, x_rec_rec
 
     def train_gan(self):
-        self.gan_model.summary()
 
-        self.gan_model.compile(loss=[self.g_loss([self.x_input, self.x_rec, self.x_rec_rec]),self.d_loss([self.x_input, self.x_rec, self.x_rec_rec])], optimizer=self.g_optimizer)
-        # self.gan_model.compile(loss=self.d_loss([self.x_input, self.x_rec, self.x_rec_rec]), optimizer=self.g_optimizer)
+        self.g_net = Model(inputs=self.x_input, outputs=self.x_rec)
+        self.g_net.compile(loss=self.g_loss([self.x_input, self.x_rec, self.x_rec_rec]), optimizer=self.g_optimizer)
+        self.g_net.summary()
 
-        (x_train, y_train), (x_test, y_test) = self.get_data
-        monitor = [TensorBoard(log_dir='./logs'),
-                   ModelCheckpoint(filepath='./model/GAN.{epoch:02d}-{val_loss:.3f}.hdf5', mode='auto')]
-        self.gan_model.fit([x_train, y_train], [x_train,x_train], shuffle=True,
-                      epochs=self.epochs,
-                      batch_size=self.batch_size,
-                      validation_data=([x_test, y_test], [x_test, x_test]),
-                      callbacks = monitor)
-        return self.gan_model
+        self.d_net = Model(inputs=self.x_input, outputs=self.x_rec_rec)
+        self.d_net.compile(loss=self.d_loss([self.x_input, self.x_rec, self.x_rec_rec]), optimizer=self.d_optimizer)
+        self.d_net.summary()
 
+        for e in tqdm(range(self.epochs)):
+            it_per_ep = len(self.X_train) / self.batch_size
+            for i in range(it_per_ep):  # 1875 * 32 = 60000 -> # of training samples
+                x_train = self.X_train[i * self.batch_size:(i + 1) * self.batch_size]
+                self.d_net.train_on_batch(x_train, x_train)
+                self.g_net.train_on_batch(x_train, x_train)
+
+            x_rec = self.vae_model.predict(x_train)
+            x_rec_rec = self.vae_model.predict(x_rec)
+            d_loss_real, d_loss_fake = np.mean(np.abs(x_train - x_rec)), np.mean(np.abs(x_rec_rec - x_rec))
+            d_loss = d_loss_real - d_loss_fake
+            g_loss = d_loss_fake
+            print(d_loss_real, d_loss_fake, d_loss, g_loss)
+
+            x_test = self.X_test
+            x_rec = self.vae_model.predict(x_test)
+            x_rec_rec = self.vae_model.predict(x_rec)
+            d_loss_real, d_loss_fake = np.mean(np.abs(x_test - x_rec)), np.mean(np.abs(x_rec_rec - x_rec))
+            d_loss = d_loss_real - d_loss_fake
+            g_loss = d_loss_fake
+            print(d_loss_real, d_loss_fake, d_loss, g_loss)
+
+            all_G_z = np.concatenate([255 * x_train[0:8], 255 * x_rec[0:8], 255 * x_rec_rec[0:8]])
+            save_image(all_G_z, '{}/epoch_{}.png'.format(self.logdir, e))
+            self.g_net.save('{}/epoch_{}.h5'.format(self.modeldir, e))
+
+def save_config(config):
+    """code from BEGAN"""
+    param_path = os.path.join(config.model_dir, "params.json")
+
+    print("[*] MODEL dir: %s" % config.model_dir)
+    print("[*] PARAM path: %s" % param_path)
+
+    with open(param_path, 'w') as fp:
+        json.dump(config.__dict__, fp, indent=4, sort_keys=True)
 
 def make_trainable(net, val):
     '''Freeze weights in the discriminator for stacked training'''
@@ -338,11 +417,11 @@ if __name__ == "__main__":
            'd_optimizer': 'sgd',
            # 'learning_rate': lr_schedule,
            'vae': False,
+           'datadir': '/home/hope-yao/Documents/Data',
            }
 
     # vae = VAE(cfg)
     # vae.train_vae()
-    # # vae.vae_model.save('my_model.h5')
     # test_vae(vae,'./result/AE.99-0.501.hdf5')
 
     gan = GAN(cfg)
