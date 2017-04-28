@@ -1,2 +1,5 @@
 1. It is observed that for AE, ELU is converging much faster than LeakyReLu using default setting. However, they eventually converge to similar value
 2. Reconstruction quality gets much better when VAE loss decrease from 0.525 to 0.501. Thus, it is not a linear relation.
+3. Initialization of AE is important to its training. Bad initial value can result in none converging. (squared error used)
+4. cross entropy loss is much fast at converging than squared error
+5. in training pure AE, the converging rate decreases fast with network goes deeper. X_rec_rec and x_rec are very similar in the begining in this case. Perhaps inception sturcture would be helpful
