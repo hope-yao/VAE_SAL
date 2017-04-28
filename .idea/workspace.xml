@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9095eff0-9b9a-48b8-8d3a-556039fdab1d" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GAN/GAN.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GAN/VAE.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GAN/util.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/Summary/summary.txt" afterPath="$PROJECT_DIR$/GAN/summary.txt" />
+    <list default="true" id="9095eff0-9b9a-48b8-8d3a-556039fdab1d" name="Default" comment="both training and monitoring is running now, but the reconstruction is wrong.&#10;note that x_rec_rec-x_rec is always smaller than x_input-x_rec, because the formal are two nonsense...">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/AE_GAN_TF.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GAN/__init__.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/AE_GAN.py" afterPath="$PROJECT_DIR$/GAN/AE_GAN_keras.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/AE_GAN.py" afterPath="$PROJECT_DIR$/AE_GAN.py" />
     </list>
     <ignored path="3D VAE.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -29,11 +27,11 @@
     <splitter split-orientation="horizontal" split-proportion="0.7049399">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file leaf-file-name="AE_GAN.py" pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/AE_GAN.py">
+          <file leaf-file-name="AE_GAN_keras.py" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/GAN/AE_GAN_keras.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="434">
-                  <caret line="383" column="0" selection-start-line="383" selection-start-column="0" selection-end-line="383" selection-end-column="0" />
+                <state relative-caret-position="197">
+                  <caret line="321" column="29" selection-start-line="321" selection-start-column="29" selection-end-line="321" selection-end-column="29" />
                   <folding>
                     <element signature="n#!!doc" expanded="false" />
                     <element signature="e#1033#1692#0" expanded="false" />
@@ -77,8 +75,20 @@
                     <element signature="e#16043#16761#0" expanded="false" />
                     <element signature="e#16049#16629#0" expanded="false" />
                     <element signature="e#16635#16651#0" expanded="false" />
-                    <marker date="1493317427796" expanded="false" signature="7753:8039" ph="..." />
-                    <marker date="1493317427796" expanded="false" signature="8070:8243" ph="..." />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="AE_GAN_TF.py" pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/AE_GAN_TF.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="561">
+                  <caret line="489" column="0" selection-start-line="489" selection-start-column="0" selection-end-line="489" selection-end-column="0" />
+                  <folding>
+                    <element signature="e#908#931#0" expanded="true" />
+                    <element signature="e#13647#14366#0" expanded="false" />
+                    <element signature="e#15649#15683#0" expanded="false" />
                   </folding>
                 </state>
               </provider>
@@ -87,7 +97,7 @@
           <file leaf-file-name="Image.py" pinned="false" current-in-tab="false">
             <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/PIL/Image.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="143">
+                <state relative-caret-position="25170">
                   <caret line="1683" column="0" selection-start-line="1683" selection-start-column="0" selection-end-line="1683" selection-end-column="0" />
                   <folding />
                 </state>
@@ -97,7 +107,7 @@
           <file leaf-file-name="writer.py" pinned="false" current-in-tab="false">
             <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/python/summary/writer/writer.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="406">
+                <state relative-caret-position="1275">
                   <caret line="98" column="6" selection-start-line="98" selection-start-column="6" selection-end-line="98" selection-end-column="42" />
                   <folding />
                 </state>
@@ -107,7 +117,7 @@
           <file leaf-file-name="training.py" pinned="false" current-in-tab="false">
             <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/keras/engine/training.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="51">
+                <state relative-caret-position="15255">
                   <caret line="1573" column="22" selection-start-line="1573" selection-start-column="8" selection-end-line="1573" selection-end-column="22" />
                   <folding>
                     <element signature="e#41732#42681#0" expanded="false" />
@@ -143,7 +153,7 @@
           <file leaf-file-name="3DVAE.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/3DVAE.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="109">
+                <state relative-caret-position="585">
                   <caret line="39" column="13" selection-start-line="39" selection-start-column="7" selection-end-line="39" selection-end-column="13" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
@@ -155,11 +165,11 @@
         </leaf>
       </split-first>
       <split-second>
-        <leaf>
+        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file leaf-file-name="3DVAE_config.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/3DVAE_config.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="473">
+                <state relative-caret-position="1590">
                   <caret line="148" column="22" selection-start-line="148" selection-start-column="16" selection-end-line="148" selection-end-column="22" />
                   <folding>
                     <element signature="n#!!doc" expanded="false" />
@@ -323,14 +333,17 @@
         <option value="$PROJECT_DIR$/GAN/util.py" />
         <option value="$PROJECT_DIR$/GAN/VAE.py" />
         <option value="$PROJECT_DIR$/GAN/GAN.py" />
+        <option value="$PROJECT_DIR$/GAN_src/AE_GAN_keras.py" />
+        <option value="$PROJECT_DIR$/GAN/AE_GAN_keras.py" />
+        <option value="$PROJECT_DIR$/AE_GAN_TF.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="1985" />
-    <option name="y" value="24" />
-    <option name="width" value="1855" />
-    <option name="height" value="1056" />
+    <option name="x" value="1984" />
+    <option name="y" value="-4" />
+    <option name="width" value="1857" />
+    <option name="height" value="1085" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -357,8 +370,8 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scratches" />
       <pane id="Scope" />
+      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -403,20 +416,6 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="VAE_SAL" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="VAE_SAL" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="GAN" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
         </subPane>
       </pane>
     </panes>
@@ -428,11 +427,11 @@
     <property name="settings.editor.splitter.proportion" value="0.2" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/GAN" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/model" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/GAN" />
     </key>
   </component>
   <component name="RunManager" selected="Python.AE_GAN">
@@ -499,7 +498,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="VAE_SAL" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/AE_GAN.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/GAN/AE_GAN_keras.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
@@ -790,27 +789,27 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="1985" y="24" width="1855" height="1056" extended-state="6" />
-    <editor active="true" />
+    <frame x="1984" y="-4" width="1857" height="1085" extended-state="6" />
+    <editor active="false" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.16638842" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.16861436" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="LuaJ" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.36802575" sideWeight="0.26766834" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32832617" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.41523606" sideWeight="0.49360046" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32944915" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.55686694" sideWeight="0.66611016" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.41523606" sideWeight="0.5086255" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32832617" sideWeight="0.49582636" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.41523606" sideWeight="0.49137452" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32939914" sideWeight="0.4980523" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.36802575" sideWeight="0.7323317" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.55686694" sideWeight="0.66611016" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.36802575" sideWeight="0.7323317" order="3" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -919,12 +918,12 @@
           <option name="timeStamp" value="253" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/AE_GAN.py</url>
+          <url>file://$PROJECT_DIR$/GAN/AE_GAN_keras.py</url>
           <line>397</line>
           <option name="timeStamp" value="266" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/AE_GAN.py</url>
+          <url>file://$PROJECT_DIR$/GAN/AE_GAN_keras.py</url>
           <line>377</line>
           <option name="timeStamp" value="270" />
         </line-breakpoint>
@@ -944,16 +943,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/Keras_test.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#2896#2933#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/keras/engine/topology.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="6150">
@@ -991,7 +980,7 @@
         <state relative-caret-position="150">
           <caret line="10" column="6" selection-start-line="10" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
           <folding>
-            <element signature="e#160#178#0" expanded="true" />
+            <element signature="e#160#178#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1087,7 +1076,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="60">
           <caret line="6" column="4" selection-start-line="6" selection-start-column="4" selection-end-line="6" selection-end-column="4" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1122,7 +1110,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="75">
           <caret line="34" column="8" selection-start-line="34" selection-start-column="8" selection-end-line="34" selection-end-column="8" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1130,7 +1117,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="227">
           <caret line="172" column="53" selection-start-line="172" selection-start-column="53" selection-end-line="172" selection-end-column="53" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1138,7 +1124,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="156">
           <caret line="367" column="15" selection-start-line="367" selection-start-column="8" selection-end-line="367" selection-end-column="15" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1156,7 +1141,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="449">
           <caret line="181" column="50" selection-start-line="181" selection-start-column="50" selection-end-line="181" selection-end-column="50" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1192,7 +1176,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="801">
           <caret line="126" column="45" selection-start-line="126" selection-start-column="36" selection-end-line="126" selection-end-column="45" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1200,7 +1183,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="261">
           <caret line="606" column="14" selection-start-line="606" selection-start-column="14" selection-end-line="606" selection-end-column="14" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1209,14 +1191,14 @@
         <state relative-caret-position="515">
           <caret line="43" column="17" selection-start-line="43" selection-start-column="17" selection-end-line="43" selection-end-column="17" />
           <folding>
-            <element signature="e#160#178#0" expanded="true" />
+            <element signature="e#160#178#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/3DVAE.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="109">
+        <state relative-caret-position="585">
           <caret line="39" column="13" selection-start-line="39" selection-start-column="7" selection-end-line="39" selection-end-column="13" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
@@ -1236,13 +1218,12 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="172">
           <caret line="1081" column="0" selection-start-line="1081" selection-start-column="0" selection-end-line="1081" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/3DVAE_config.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="473">
+        <state relative-caret-position="1590">
           <caret line="148" column="22" selection-start-line="148" selection-start-column="16" selection-end-line="148" selection-end-column="22" />
           <folding>
             <element signature="n#!!doc" expanded="false" />
@@ -1299,7 +1280,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="159">
           <caret line="392" column="24" selection-start-line="392" selection-start-column="24" selection-end-line="392" selection-end-column="24" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1307,7 +1287,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="174">
           <caret line="626" column="0" selection-start-line="626" selection-start-column="0" selection-end-line="626" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1905,7 +1884,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="482">
           <caret line="94" column="0" selection-start-line="94" selection-start-column="0" selection-end-line="94" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -2015,7 +1993,7 @@
     </entry>
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/python/summary/writer/writer.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="406">
+        <state relative-caret-position="1275">
           <caret line="98" column="6" selection-start-line="98" selection-start-column="6" selection-end-line="98" selection-end-column="42" />
           <folding />
         </state>
@@ -2023,7 +2001,7 @@
     </entry>
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/PIL/Image.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="143">
+        <state relative-caret-position="25170">
           <caret line="1683" column="0" selection-start-line="1683" selection-start-column="0" selection-end-line="1683" selection-end-column="0" />
           <folding />
         </state>
@@ -2106,7 +2084,7 @@
     </entry>
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/keras/engine/training.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="51">
+        <state relative-caret-position="15255">
           <caret line="1573" column="22" selection-start-line="1573" selection-start-column="8" selection-end-line="1573" selection-end-column="22" />
           <folding>
             <element signature="e#41732#42681#0" expanded="false" />
@@ -2128,10 +2106,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/AE_GAN.py">
+    <entry file="file://$PROJECT_DIR$/GAN/AE_GAN_keras.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="434">
-          <caret line="383" column="0" selection-start-line="383" selection-start-column="0" selection-end-line="383" selection-end-column="0" />
+        <state relative-caret-position="197">
+          <caret line="321" column="29" selection-start-line="321" selection-start-column="29" selection-end-line="321" selection-end-column="29" />
           <folding>
             <element signature="n#!!doc" expanded="false" />
             <element signature="e#1033#1692#0" expanded="false" />
@@ -2175,8 +2153,18 @@
             <element signature="e#16043#16761#0" expanded="false" />
             <element signature="e#16049#16629#0" expanded="false" />
             <element signature="e#16635#16651#0" expanded="false" />
-            <marker date="1493317427796" expanded="false" signature="7753:8039" ph="..." />
-            <marker date="1493317427796" expanded="false" signature="8070:8243" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/AE_GAN_TF.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="561">
+          <caret line="489" column="0" selection-start-line="489" selection-start-column="0" selection-end-line="489" selection-end-column="0" />
+          <folding>
+            <element signature="e#908#931#0" expanded="true" />
+            <element signature="e#13647#14366#0" expanded="false" />
+            <element signature="e#15649#15683#0" expanded="false" />
           </folding>
         </state>
       </provider>
