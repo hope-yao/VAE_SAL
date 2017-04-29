@@ -52,7 +52,7 @@ class MyLayer(Layer):
 
 def test_vae(vae, fn):
     vae.vae_model.load_weights(fn)
-    (_, _), (x_test, y_test) = vae.get_data
+    (_, _), (x_test, y_test) = vae.CelebA(vae.datadir)
     x_rec = vae.vae_model.predict(x_test)
     save_image( x_test, x_rec)
 
@@ -291,7 +291,7 @@ class VAE(object):
                       epochs=epochs,
                       batch_size=self.batch_size,
                       validation_data=(self.X_test, self.X_test),
-                      callbacks = monitor)
+                      callbacks = [])
         # self.vae_model.fit_generator(self.myGenerator(),steps_per_epoch=1000)
         return self.vae_model
 
@@ -425,17 +425,17 @@ if __name__ == "__main__":
            'g_optimizer': 'adam',
            'd_optimizer': 'sgd',
            # 'learning_rate': lr_schedule,
-           'vae': True,
+           'vae': False,
            'datadir': '/home/hope-yao/Documents/Data',
            'pre_train': True,
            }
 
-    # vae = VAE(cfg)
+    vae = VAE(cfg)
     # vae.train_vae()
-    # test_vae(vae,'./result/AE.99-0.501.hdf5')
+    test_vae(vae,'./result/AE.99-0.501.hdf5')
 
-    gan = GAN(cfg)
-    gan.train_gan()
+    # gan = GAN(cfg)
+    # gan.train_gan()
 
 
 

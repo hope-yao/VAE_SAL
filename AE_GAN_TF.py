@@ -98,6 +98,7 @@ class VAE(object):
         self.datadir = cfg['datadir']
         self.encoder_module = self.basic_enc_conv_module
         self.decoder_module = self.basic_dec_conv_module
+        self.n_blocks = cfg['n_blocks']
 
         # Optimizer Parameter Setting
         self.batch_size = cfg['batch_size']
@@ -111,12 +112,12 @@ class VAE(object):
         else:
             self.network_type = 'AE'
         self.logdir,self.modeldir = self.creat_dir(self.network_type)
-        save_config(cfg, self.modeldir)
+        save_config(cfg, self.logdir)
 
         # define VAE network
         self.x_input = tf.placeholder(tf.float32, [self.batch_size, self.img_size, self.img_size, self.n_ch_in])
         self.y_input = tf.placeholder(tf.float32, [self.batch_size, self.n_attributes])
-        self.x_rec = self.def_vae(self.x_input)
+        self.log_x_rec, self.x_rec = self.def_vae(self.n_blocks, self.x_input)
 
         (self.X_train, self.y_train), (self.X_test, self.y_test) = self.CelebA(self.datadir)
 
@@ -161,13 +162,14 @@ class VAE(object):
         epsilon = tf.random_normal(shape=(self.batch_size, self.latent_dim), mean=0.)
         return z_mean + tf.exp(z_log_var / 2) * epsilon
 
-    def compute_vae_loss(self, x_input, x_rec, variational):
-        xent_loss = tf.reduce_mean(-x_input * tf.log(x_rec+ TINY) - (1 - x_input) * tf.log( 1 - x_rec+ TINY))
-        rec_er = tf.reduce_mean(tf.squared_difference(x_input, x_rec))
+    def compute_vae_loss(self, x_input, log_x_rec, variational):
+        # xent_loss = tf.reduce_mean(-x_input * tf.log(x_rec+ TINY) - (1 - x_input) * tf.log( 1 - x_rec+ TINY))
+        xent_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=x_input,logits=log_x_rec))
+        rec_er = tf.reduce_mean(tf.sqrt(tf.squared_difference(x_input, tf.nn.sigmoid(log_x_rec))))
         self.log_vars.append(("xent_loss", tf.reduce_mean(xent_loss)))
         self.log_vars.append(("vae_rec_er", tf.reduce_mean(rec_er)))
         if variational:
-            kl_loss = - 0.5 * tf.reduce_sum(1 + self.z_log_var - tf.square(self.z_mean) - tf.exp(self.z_log_var), axis=-1)
+            kl_loss = - 0.5 * tf.reduce_mean(1 + self.z_log_var - tf.square(self.z_mean) - tf.exp(self.z_log_var))
             self.log_vars.append(("mean_variance", tf.reduce_mean(self.z_log_var)))
             self.log_vars.append(("kl_loss", tf.reduce_mean(kl_loss)))
         else:
@@ -188,7 +190,7 @@ class VAE(object):
             output = self.decoder_module(output, n_ch)
         # initializer = tf.truncated_normal_initializer(stddev=0.01)
         # regularizer = slim.l2_regularizer(0.0005)
-        output = slim.conv2d_transpose(output, self.n_ch_in, (3, 3), activation_fn=tf.sigmoid, scope='this')#, padding='same'
+        output = slim.conv2d_transpose(output, self.n_ch_in, (3, 3), activation_fn=None, scope='this')#, padding='same'
         return output
 
     def basic_enc_conv_module(self, input, n_ch):
@@ -207,21 +209,19 @@ class VAE(object):
         output = slim.conv2d_transpose(output, n_ch, 3, 2, activation_fn=self.act_func) #scope='conv3_1'
         return output
 
-    def def_vae_test(self,x_input):
-        n_blocks = 1 # there are n_blocks convolution and pooling structure
+    def def_vae_test(self, n_blocks, x_input):
 
         # Encoder
         with tf.variable_scope("encoder", reuse=True):
             output = self.encoder(x_input, n_blocks)
         # Decoder
         with tf.variable_scope("decoder", reuse=True):
-            x_rec = self.decoder(output, n_blocks)
+            log_x_rec = self.decoder(output, n_blocks)
 
-        return x_rec
+        return log_x_rec, tf.nn.sigmoid(log_x_rec)
 
-    def def_vae(self,x_input):
+    def def_vae(self, n_blocks, x_input):
         '''build up model'''
-        n_blocks = 1 # there are n_blocks convolution and pooling structure
 
         # Encoder
         with tf.variable_scope("encoder", reuse=True):
@@ -233,19 +233,19 @@ class VAE(object):
             iterm_size = self.img_size/2**n_blocks
             iterm_ch = self.n_filter*2**(n_blocks-1)
             if self.network_type == 'AE':
-                h2 = slim.fully_connected(h1, self.latent_dim,activation_fn=tf.nn.relu)
+                h2 = slim.fully_connected(h1, self.latent_dim,activation_fn=self.act_func)
             else:
                 h2 = slim.fully_connected(h1, 2*self.latent_dim,activation_fn=tf.sigmoid) # doubled for both mean and variance
                 self.z_mean, self.z_log_var = tf.split(h2, num_or_size_splits=2, axis=1)
                 h2 =  self.sampling(self.z_mean, self.z_log_var)
-            h3 = slim.fully_connected(h2, iterm_size*iterm_size*iterm_ch, activation_fn=tf.nn.relu)
+            h3 = slim.fully_connected(h2, iterm_size*iterm_size*iterm_ch, activation_fn=self.act_func)
             h = tf.reshape(h3,[self.batch_size, iterm_size , iterm_size , iterm_ch])
 
         # Decoder
         with tf.variable_scope("decoder", reuse=True):
-            x_rec = self.decoder(h, n_blocks)
+            log_x_rec = self.decoder(h, n_blocks)
 
-        return x_rec
+        return log_x_rec, tf.nn.sigmoid(log_x_rec)
 
     def train_vae(self, **kwargs):
         '''model training'''
@@ -258,12 +258,12 @@ class VAE(object):
         with tf.Session() as sess:
 
             if self.optimizer == 'adam':
-                vae_optimizer = tf.train.AdamOptimizer()
+                vae_optimizer = tf.train.AdamOptimizer(self.vae_lr)
             elif self.optimizer == 'adadelta':
-                vae_optimizer = tf.train.AdadeltaOptimizer()
+                vae_optimizer = tf.train.AdadeltaOptimizer(self.vae_lr)
             else:
                 raise Exception("[!] Caution! {} opimizer is not implemented in VAE training".format(self.optimizer))
-            self.vae_loss = self.compute_vae_loss(self.x_input, self.x_rec, self.variational)
+            self.vae_loss = self.compute_vae_loss(self.x_input, self.log_x_rec, self.variational)
             vae_trainer = vae_optimizer.minimize(self.vae_loss)#, var_list=self.vae_var
 
             init = tf.global_variables_initializer()
@@ -307,8 +307,8 @@ class VAE(object):
                     raise ValueError("NaN detected!")
 
                 # save reconstructed images
-                x_rec = self.def_vae(x_train)
-                x_rec_rec = self.def_vae(x_rec)
+                _, x_rec = self.def_vae(self.n_blocks, x_train)
+                _, x_rec_rec = self.def_vae(self.n_blocks, x_rec)
                 all_G_z = np.concatenate([255 * x_train[0:8], 255 * x_rec.eval()[0:8], 255 * x_rec_rec.eval()[0:8]])
                 save_image(all_G_z, '{}/epoch_{}_{}.png'.format(self.logdir, epoch, log_line))
 
@@ -428,8 +428,8 @@ class GAN(VAE):
                     raise ValueError("NaN detected!")
 
                 # save reconstructed images
-                x_rec = self.def_vae(x_train)
-                x_rec_rec = self.def_vae(x_rec)
+                _, x_rec = self.def_vae(self.n_blocks, x_train)
+                _, x_rec_rec = self.def_vae(self.n_blocks, x_rec)
                 all_G_z = np.concatenate([255 * x_train[0:8], 255 * x_rec.eval()[0:8], 255 * x_rec_rec.eval()[0:8]])
                 save_image(all_G_z, '{}/epoch_{}_{}.png'.format(self.logdir, epoch, log_line))
 
@@ -440,7 +440,8 @@ class GAN(VAE):
 if __name__ == "__main__":
 
     cfg = {'batch_size': 64,
-           'act_func': 'ReLu', #ELU, ReLu
+           'n_blocks': 3,  # there are n_blocks convolution and pooling structure
+            'act_func': 'ELU', #ELU, ReLu
            'input_dim': (64, 64),
            'n_channels': 3,
            'n_attributes': 40,
@@ -450,13 +451,13 @@ if __name__ == "__main__":
            'max_epochs': 1000,
            'latent_dim': 100,
            'vae_optimizer': 'adadelta',
-           'vae_lr': 1e-1,
+           'vae_lr': 8e-1,
            'g_lr': 5e-3,
            'd_lr': 1e-4,
            'g_optimizer': 'adam',
            'd_optimizer': 'sgd',
            # 'learning_rate': lr_schedule,
-           'vae': False,
+           'vae': True,
            'datadir': '/home/hope-yao/Documents/Data',
            'pre_train': True,
            'snapshot_interval': 5000,

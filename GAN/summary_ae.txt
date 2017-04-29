@@ -1,0 +1,13 @@
+AE_2017_04_28_14_42_10		default lr, 1 conv block, no fc, squared rec_er
+AE_2017_04_28_15_12_33		lr=1e-1, 1 conv block, no fc
+AE_2017_04_28_15_24_25		lr=1e-1, 1 conv block, fc added
+AE_2017_04_28_15_56_42		lr=1e-1, 2 conv block, no fc
+AE_2017_04_28_16_05_26		lr=1e-1, 3 conv block, no fc
+AE_2017_04_28_15_24_25		lr=1e-1, 2 conv block, fc added, ELU in FC
+AE_2017_04_28_16_23_49		lr=1e-1, 3 conv block, fc added, ELU in FC
+AE_2017_04_28_16_32_56		lr=5e-1, 3 conv block, fc added, ELU in FC
+VAE_2017_04_28_16_52_52		lr=8e-1, 3 conv block, fc added, ELU in FC
+
+
+
+

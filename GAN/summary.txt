@@ -3,3 +3,13 @@
 3. Initialization of AE is important to its training. Bad initial value can result in none converging. (squared error used)
 4. cross entropy loss is much fast at converging than squared error
 5. in training pure AE, the converging rate decreases fast with network goes deeper. X_rec_rec and x_rec are very similar in the begining in this case. Perhaps inception sturcture would be helpful
+6. it is observed that the network first match the image in grey scale, the fine tune the details and the detailed color.
+7. very large lr such as 0.1 is needed for adadelta in AE_celeba. But adaptive lr maybe desired later on
+
+8. POSSIBLE ERROR HERE! For AE without FC layers (and some times with FC), rec_loss decrease with increasing number of layers, but rec_acc increase with increasing number of layers.
+9. when FC is added, the reconstruction seems always getting "much worse". It is observed that the edges are lost, maybe due to the FC mixture.
+10. When FC is added, more conv layers will improve the reconstruction accuracy, however, reconstruction accuracy is still much higher than AE without FC
+11. Based on above finding, maybe FC can be removed in discriminator...
+
+12. even larger lr as 0.5 is also fine for AE with 3 conv blocks and FC..
+13. Keras VAE reconstruction result is much much better than the TF result
