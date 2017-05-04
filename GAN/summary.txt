@@ -13,3 +13,9 @@
 
 12. even larger lr as 0.5 is also fine for AE with 3 conv blocks and FC..
 13. Keras VAE reconstruction result is much much better than the TF result
+
+14. GAN with VAE with FC is converging asymptotically, however, the reconstruction is not very good due to original AE_FC
+15. X_rec error in tensorboard and print is not the same. Base on the reconstructed image, there might be something wring in the tensorboard value.
+
+16. A vanilla inception is converging super slow even for 2 blocked AE using DEFAULT LR. However, it can obtain better result than AE with 1/2/3 conventional VGG style blocks in the begining. But later on ~= 1 VGG block
+17. Similar to VGG block, 3 Incep block is still worse than 2 Incep block
