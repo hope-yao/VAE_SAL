@@ -599,13 +599,13 @@ class GAN3(object):
                 log_x_gen = self.vae_g.decoder(self.z_input,self.n_blocks)
                 x_gen = tf.nn.sigmoid(log_x_gen, name='x_gen')
             with tf.variable_scope("vae_d", reuse=True):
-                with tf.variable_scope("pass1", reuse=True):
-                    _, x_rec = self.vae_d.def_vae(self.n_blocks, self.x_input)
-                    x_rec = tf.identity(x_rec, name="x_rec")
-                with tf.variable_scope("pass2", reuse=True):
-                    _, x_gen_rec = self.vae_d.def_vae(self.n_blocks, x_gen)
-                    x_gen_rec = tf.identity(x_gen_rec, name="x_gen_rec")
-                    # _, x_rec_rec = self.vae_d.def_vae(self.n_blocks, x_rec)
+            # with tf.variable_scope("pass1", reuse=True):
+                _, x_rec = self.vae_d.def_vae(self.n_blocks, self.x_input)
+                x_rec = tf.identity(x_rec, name="x_rec")
+            # with tf.variable_scope("pass2", reuse=True):
+                _, x_gen_rec = self.vae_d.def_vae(self.n_blocks, x_gen)
+                x_gen_rec = tf.identity(x_gen_rec, name="x_gen_rec")
+                # _, x_rec_rec = self.vae_d.def_vae(self.n_blocks, x_rec)
 
             # Get loss_gen
             self.real_loss = self.get_real_loss(self.x_input, x_rec)
