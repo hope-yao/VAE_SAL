@@ -54,7 +54,7 @@ def test_vae(vae, fn):
     vae.vae_model.load_weights(fn)
     (_, _), (x_test, y_test) = vae.CelebA(vae.datadir)
     x_rec = vae.vae_model.predict(x_test)
-    save_image( x_test, x_rec)
+    plt_rec( x_test, x_rec)
 
 def plt_rec(x_test, x_rec):
             import matplotlib.pyplot as plt

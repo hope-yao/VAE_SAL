@@ -19,3 +19,5 @@
 
 16. A vanilla inception is converging super slow even for 2 blocked AE using DEFAULT LR. However, it can obtain better result than AE with 1/2/3 conventional VGG style blocks in the begining. But later on ~= 1 VGG block
 17. Similar to VGG block, 3 Incep block is still worse than 2 Incep block
+
+18. the value of k_t is important to training. Unconverging if set it to 1, converging well if set to 0.01
