@@ -513,6 +513,10 @@ class GAN3(object):
     def __init__(self,cfg):
         self.log_vars = []
         self.k_t = tf.Variable(0., trainable=False, name='k_t')
+        self.log_vars.append(("k_t", tf.reduce_mean(self.k_t)))
+        # self.k_t1 = tf.Variable(0., trainable=False, name='k_t1')
+        # self.k_t2 = tf.Variable(0., trainable=False, name='k_t2')
+        # self.k_t3 = tf.Variable(0., trainable=False, name='k_t3')
 
         self.gamma = tf.cast(cfg['gamma'], tf.float32)
         self.lambda_k = tf.cast(cfg['lambda_k'], tf.float32)
@@ -615,8 +619,12 @@ class GAN3(object):
             self.log_vars.append(("balance", tf.reduce_mean(self.balance)))
             self.measure = self.real_loss + tf.abs(self.balance)
             self.log_vars.append(("measure", tf.reduce_mean(self.measure)))
-            self.k_t = tf.clip_by_value(self.k_t + self.lambda_k * self.balance, 0, 1)
-            self.log_vars.append(("k_t", tf.reduce_mean(self.k_t)))
+            # self.k_t = tf.clip_by_value(self.k_t + self.lambda_k * self.balance, 0, 1)
+            # self.k_t1 = self.lambda_k * self.balance
+            # self.log_vars.append(("k_t1", tf.reduce_mean(self.k_t1)))
+            # self.k_t2 = self.k_t2 + self.lambda_k * self.balance
+            # self.log_vars.append(("k_t2", tf.reduce_mean(self.k_t2)))
+            # self.log_vars.append(("k_t3", tf.reduce_mean(self.k_t3)))
 
             all_vars = tf.trainable_variables()
             d_vars = [var for var in all_vars if var.name.startswith('vae_d')]
@@ -660,11 +668,13 @@ class GAN3(object):
                     z_input = np.random.uniform(-1, 1, size=(self.batch_size, self.latent_dim)).astype('float32')
                     feed_dict = {self.x_input: x_train, self.y_input: y_train, self.z_input:z_input}
                     # train D
-                    log_vals = sess.run([d_trainer] + log_vars, feed_dict)[1:]
+                    sess.run(d_trainer, feed_dict)
                     # train G
-                    log_vals = sess.run([g_trainer] + log_vars, feed_dict)[1:]
+                    sess.run(g_trainer, feed_dict)
                     # train k_t
+                    self.k_t = sess.run(tf.clip_by_value(self.k_t + self.lambda_k * self.balance, 0, 1), feed_dict)
                     log_vals = sess.run(log_vars, feed_dict)
+                    log_vals[0] = self.k_t # this needs special treatment...
                     all_log_vals.append(log_vals)
 
                     if counter % self.snapshot_interval == 0:
@@ -683,6 +693,7 @@ class GAN3(object):
                 # output to tensorboard
                 x_train = self.X_train[i * self.batch_size:(i + 1) * self.batch_size]
                 y_train = self.y_train[i * self.batch_size:(i + 1) * self.batch_size]
+                z_input = np.random.uniform(-1, 1, size=(self.batch_size, self.latent_dim)).astype('float32')
                 feed_dict = {self.x_input: x_train, self.y_input: y_train, self.z_input:z_input}
                 summary_str = sess.run(summary_op, feed_dict)
                 summary_writer.add_summary(summary_str, counter)
@@ -716,7 +727,7 @@ if __name__ == "__main__":
            'g_optimizer': 'adam',
            'd_optimizer': 'adam',
            'gamma': 0.5,
-           'lambda_k': 0.01,
+           'lambda_k': 0.001,
            # 'learning_rate': lr_schedule,
            'vae': False,
            'datadir': '/home/hope-yao/Documents/Data',
