@@ -512,14 +512,11 @@ class VAE(object):
 class GAN3(object):
     def __init__(self,cfg):
         self.log_vars = []
-        self.k_t = tf.Variable(0., trainable=False, name='k_t')
-        self.log_vars.append(("k_t", tf.reduce_mean(self.k_t)))
-        # self.k_t1 = tf.Variable(0., trainable=False, name='k_t1')
-        # self.k_t2 = tf.Variable(0., trainable=False, name='k_t2')
-        # self.k_t3 = tf.Variable(0., trainable=False, name='k_t3')
 
         self.gamma = tf.cast(cfg['gamma'], tf.float32)
         self.lambda_k = tf.cast(cfg['lambda_k'], tf.float32)
+        self.k_t = cfg['k_t']
+        self.log_vars.append(("k_t", tf.reduce_mean(self.k_t)))
 
         self.vae_g = VAE(cfg)
         self.vae_d = VAE(cfg)
@@ -591,7 +588,8 @@ class GAN3(object):
         epochs = self.epochs
         (self.X_train, self.y_train), (self.X_test, self.y_test) = self.vae_g.CelebA(self.vae_g.datadir)
 
-        with tf.Session() as sess:
+        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
+        with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
 
             # get variable
             with tf.variable_scope("vae_g", reuse=True):
@@ -619,12 +617,8 @@ class GAN3(object):
             self.log_vars.append(("balance", tf.reduce_mean(self.balance)))
             self.measure = self.real_loss + tf.abs(self.balance)
             self.log_vars.append(("measure", tf.reduce_mean(self.measure)))
-            # self.k_t = tf.clip_by_value(self.k_t + self.lambda_k * self.balance, 0, 1)
-            # self.k_t1 = self.lambda_k * self.balance
-            # self.log_vars.append(("k_t1", tf.reduce_mean(self.k_t1)))
-            # self.k_t2 = self.k_t2 + self.lambda_k * self.balance
-            # self.log_vars.append(("k_t2", tf.reduce_mean(self.k_t2)))
-            # self.log_vars.append(("k_t3", tf.reduce_mean(self.k_t3)))
+            self.k_t_update = tf.clip_by_value(self.lambda_k * self.balance, 0, 1)
+            self.log_vars.append(("k_t_update", tf.reduce_mean(self.k_t_update)))
 
             all_vars = tf.trainable_variables()
             d_vars = [var for var in all_vars if var.name.startswith('vae_d')]
@@ -670,11 +664,10 @@ class GAN3(object):
                     # train D
                     sess.run(d_trainer, feed_dict)
                     # train G
-                    sess.run(g_trainer, feed_dict)
-                    # train k_t
-                    self.k_t = sess.run(tf.clip_by_value(self.k_t + self.lambda_k * self.balance, 0, 1), feed_dict)
-                    log_vals = sess.run(log_vars, feed_dict)
-                    log_vals[0] = self.k_t # this needs special treatment...
+                    log_vals = sess.run([g_trainer]+log_vars, feed_dict)[1:]
+                    # train k_t and get logs
+                    self.k_t += sess.run(self.k_t_update,feed_dict)
+                    log_vals[0] = self.k_t
                     all_log_vals.append(log_vals)
 
                     if counter % self.snapshot_interval == 0:
@@ -705,7 +698,6 @@ class GAN3(object):
                 # x_gen_rec_img = sess.run(x_rec, feed_dict)
                 x_gen_rec_img = sess.run(x_gen_rec, feed_dict)
                 all_G_z = np.concatenate([255 * x_train[0:8], 255 * x_rec_img[0:8], 255 * x_gen_img[0:8], 255 * x_gen_rec_img[0:8]])
-                print(sess.run(self.get_fake_loss(x_gen_img, x_gen_rec_img)),sess.run(self.get_real_loss(x_train, x_rec_img)))
                 save_image(all_G_z, '{}/epoch_{}_{}.png'.format(self.logdir, epoch, log_line))
 
 if __name__ == "__main__":
@@ -728,6 +720,7 @@ if __name__ == "__main__":
            'd_optimizer': 'adam',
            'gamma': 0.5,
            'lambda_k': 0.001,
+           'k_t': 0.0,
            # 'learning_rate': lr_schedule,
            'vae': False,
            'datadir': '/home/hope-yao/Documents/Data',
