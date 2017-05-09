@@ -81,6 +81,19 @@ def save_config(config, model_dir):
     param_path = os.path.join(model_dir, "params.txt")
     json.dump(config, open(param_path , 'w'))
 
+def to_nhwc(image, data_format):
+    if data_format == 'NCHW':
+        new_image = nchw_to_nhwc(image)
+    else:
+        new_image = image
+    return new_image
+
+def norm_img(image, data_format=None):
+    image = image/127.5 - 1.
+    if data_format:
+        image = to_nhwc(image, data_format)
+    return image
+
 def int_shape(tensor):
     shape = tensor.get_shape().as_list()
     return [num if num is not None else -1 for num in shape]
@@ -115,7 +128,7 @@ def upscale(x, scale, data_format):
 class VAE(object):
     def __init__(self, cfg):
         self.log_vars = []
-
+        self.cfg = cfg
         # Network Parameter Setting
         self.variational = cfg['vae']
         self.act_func = self.activation(cfg)
@@ -148,7 +161,7 @@ class VAE(object):
         self.x_input = tf.placeholder(tf.float32, [self.batch_size, self.img_size, self.img_size, self.n_ch_in])
         self.y_input = tf.placeholder(tf.float32, [self.batch_size, self.n_attributes])
 
-    def CelebA(self, datadir):
+    def CelebA(self, datadir, num=200000):
         '''load human face dataset'''
         import h5py
         from random import sample
@@ -157,7 +170,7 @@ class VAE(object):
         data_key = f.keys()[0]
         data = (np.asarray(f[data_key],dtype='float32') / 255. - 0.5 )*2 # normalized into (-1, 1)
         # data = np.asarray(f[data_key],dtype='float32') / 255.
-        data = data.transpose((0,2,3,1))
+        # data = data.transpose((0,2,3,1))
         label_key = f.keys()[1]
         label = np.asarray(f[label_key])
 
@@ -172,7 +185,7 @@ class VAE(object):
         y_train = np.delete(label, indices, 0)
 
         # return (x_train, y_train), (x_test, y_test)
-        return (x_train[0:10000], y_train[0:10000]), (x_test[0:1000], y_test[0:1000])
+        return (x_train[0:num], y_train[0:num]), (x_test[0:1000], y_test[0:1000])
 
     def activation(self, cfg):
         '''define activation function of the convolution'''
@@ -524,8 +537,9 @@ class GAN4(object):
 
         self.gamma = tf.cast(cfg['gamma'], tf.float32)
         self.lambda_k = tf.cast(cfg['lambda_k'], tf.float32)
-        self.k_t = cfg['k_t']
-        self.log_vars.append(("k_t", tf.reduce_mean(self.k_t)))
+        # self.k_t = cfg['k_t']
+        # self.log_vars.append(("k_t", tf.reduce_mean(self.k_t)))
+        self.k_t = tf.Variable(0., trainable=False, name='k_t')
 
         self.vae_g = VAE(cfg)
         self.vae_d = VAE(cfg)
@@ -572,12 +586,25 @@ class GAN4(object):
         self.vae_lr = cfg['vae_lr']
         self.snapshot_interval = cfg['snapshot_interval']
 
-        self.x_input = tf.placeholder(tf.float32, [self.batch_size, self.img_size, self.img_size, self.n_ch_in],name='x_input')
-        self.y_input = tf.placeholder(tf.float32, [self.batch_size, self.n_attributes],name='y_input')
-        self.z_input = tf.placeholder(tf.float32, [self.batch_size, self.latent_dim],name='z_input')
+        # self.x_input = tf.placeholder(tf.float32, [self.batch_size, self.img_size, self.img_size, self.n_ch_in],name='x_input')
+        # self.x_input = tf.placeholder(tf.float32, [self.batch_size, self.n_ch_in, self.img_size, self.img_size],name='x_input')
+        # self.y_input = tf.placeholder(tf.float32, [self.batch_size, self.n_attributes],name='y_input')
+        # self.z_input = tf.placeholder(tf.float32, [self.batch_size, self.latent_dim],name='z_input')
+        from data_loader import get_loader
+        data_path = '/home/hope-yao/Documents/Data/img_align_celeba'
+        batch_size = 16
+        input_scale_size = 64
+        data_format = 'NCHW'
+        split = 'train'
+        self.data_loader = get_loader(
+            data_path, batch_size, input_scale_size,
+            data_format, split)
+        self.x_input = self.data_loader
+        self.y_input = tf.zeros([self.batch_size, self.n_attributes])
+        self.z_input = tf.random_uniform(
+            (self.batch_size, self.latent_dim), minval=-1.0, maxval=1.0)
 
-    hidden_num = 128
-    def GeneratorCNN(z, hidden_num, output_num, repeat_num, data_format, reuse):
+    def GeneratorCNN(self, z, hidden_num, output_num, repeat_num, data_format, reuse):
         with tf.variable_scope("G", reuse=reuse) as vs:
             x = slim.fully_connected(z, np.prod([8, 8, hidden_num]), activation_fn=None)
             x = reshape(x, 8, 8, hidden_num, data_format)
@@ -593,9 +620,7 @@ class GAN4(object):
         variables = tf.contrib.framework.get_variables(vs)
         return out, variables
 
-    input_channel = 3
-    z_num = 64
-    def DiscriminatorCNN(x, input_channel, z_num, repeat_num, hidden_num, data_format):
+    def DiscriminatorCNN(self, x, input_channel, z_num, repeat_num, hidden_num, data_format):
         with tf.variable_scope("D") as vs:
             # Encoder
             x = slim.conv2d(x, hidden_num, 3, 1, activation_fn=tf.nn.elu, data_format=data_format)
@@ -606,8 +631,8 @@ class GAN4(object):
                 x = slim.conv2d(x, channel_num, 3, 1, activation_fn=tf.nn.elu, data_format=data_format)
                 x = slim.conv2d(x, channel_num, 3, 1, activation_fn=tf.nn.elu, data_format=data_format)
                 if idx < repeat_num - 1:
-                    x = slim.conv2d(x, channel_num, 3, 2, activation_fn=tf.nn.elu, data_format=data_format)
-                    # x = tf.contrib.layers.max_pool2d(x, [2, 2], [2, 2], padding='VALID')
+                    # x = slim.conv2d(x, channel_num, 3, 2, activation_fn=tf.nn.elu, data_format=data_format)
+                    x = tf.contrib.layers.max_pool2d(x, [2, 2], [2, 2], padding='VALID', data_format=data_format)
 
             x = tf.reshape(x, [-1, np.prod([8, 8, channel_num])])
             z = x = slim.fully_connected(x, z_num, activation_fn=None)
@@ -646,138 +671,193 @@ class GAN4(object):
     def train_gan(self, **kwargs):
         '''model training'''
         epochs = self.epochs
-        (self.X_train, self.y_train), (self.X_test, self.y_test) = self.vae_g.CelebA(self.vae_g.datadir)
+        # (self.X_train, self.y_train), (self.X_test, self.y_test) = self.vae_g.CelebA(self.vae_g.datadir)
 
-        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.25)
-        with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
+        x = norm_img(self.x_input)
+        z = self.z_input
+        hidden_num = 128
+        height = 64
+        repeat_num = int(np.log2(height)) - 2
+        data_format = 'NCHW'
+        channel = 3
+        z_num = 64
+        conv_hidden_num = 128
+        x_gen, self.G_var = self.GeneratorCNN(z, conv_hidden_num, channel,repeat_num, data_format, reuse=False)
+        d_out, self.D_z, self.D_var = self.DiscriminatorCNN(tf.concat([x_gen, x], 0), channel, z_num,
+                                                            repeat_num,conv_hidden_num, data_format)
+        x_gen_rec, x_rec = tf.split(d_out, 2)
+        self.x_rec, self.x_gen, self.x_gen_rec = x_rec, x_gen, x_gen_rec
+        g_optimizer, d_optimizer = tf.train.AdamOptimizer(self.g_lr), tf.train.AdamOptimizer(self.d_lr)
 
-            # get variable
-            with tf.variable_scope("vae_g", reuse=True):
-                # _, x_rec = self.vae_g.def_vae(self.n_blocks, self.x_input)
-                x_gen = self.vae_g.decoder(self.z_input,self.n_blocks)
-                x_gen = tf.identity(x_gen, name="x_gen")
-                sig_x_gen = tf.nn.sigmoid(x_gen, name='sig_x_gen')
-            with tf.variable_scope("vae_d", reuse=True):
-                # with tf.variable_scope("pass1", reuse=True):
-                x_rec , sig_x_rec = self.vae_d.def_vae(self.n_blocks, self.x_input)
-                x_rec = tf.identity(x_rec, name="x_rec")
-                # with tf.variable_scope("pass2", reuse=True):
-                x_gen_rec, sig_x_gen_rec = self.vae_d.def_vae(self.n_blocks, x_gen)
-                x_gen_rec = tf.identity(x_gen_rec, name="x_gen_rec")
-                # _, x_rec_rec = self.vae_d.def_vae(self.n_blocks, x_rec)
+        self.d_loss_real = tf.reduce_mean(tf.abs(x_rec - x))
+        self.d_loss_fake = tf.reduce_mean(tf.abs(x_gen_rec - x_gen))
 
-            # Get loss_gen
-            self.real_loss = self.get_real_loss(self.x_input, x_rec)
-            self.log_vars.append(("real_loss", tf.reduce_mean(self.real_loss)))
-            self.g_loss = self.get_fake_loss(x_gen, x_gen_rec)
-            self.log_vars.append(("fake_loss", tf.reduce_mean(self.g_loss)))
-            self.d_loss = self.get_d_loss(self.real_loss, self.g_loss)
-            self.log_vars.append(("d_loss", tf.reduce_mean(self.d_loss)))
+        self.d_loss = self.d_loss_real - self.k_t * self.d_loss_fake
+        self.g_loss = tf.reduce_mean(tf.abs(x_gen_rec - x_gen))
+        self.balance = self.gamma * self.d_loss_real - self.g_loss
+        self.measure = self.d_loss_real + tf.abs(self.balance)
 
-            self.balance = self.gamma * self.real_loss - self.g_loss
-            self.log_vars.append(("balance", tf.reduce_mean(self.balance)))
-            self.measure = self.real_loss + tf.abs(self.balance)
-            self.log_vars.append(("measure", tf.reduce_mean(self.measure)))
-            self.k_t_update = self.lambda_k * self.balance
-            self.log_vars.append(("k_t_update", tf.reduce_mean(self.k_t_update)))
+        self.step = tf.Variable(0, name='step', trainable=False)
+        d_optim = d_optimizer.minimize(self.d_loss, var_list=self.D_var)
+        g_optim = g_optimizer.minimize(self.g_loss, global_step=self.step, var_list=self.G_var)
+        with tf.control_dependencies([d_optim, g_optim]):
+            self.k_update = tf.assign(
+                self.k_t, tf.clip_by_value(self.k_t + self.lambda_k * self.balance, 0, 1))
+        self.log_vars.append(("d_loss", tf.reduce_mean(self.d_loss)))
+        self.log_vars.append(("g_loss", tf.reduce_mean(self.g_loss)))
+        self.log_vars.append(("measure", tf.reduce_mean(self.measure)))
+        self.log_vars.append(("k_t", tf.reduce_mean(self.k_t)))
+        log_vars = [x for _, x in self.log_vars]
+        log_keys = [x for x, _ in self.log_vars]
+        for k, v in self.log_vars:
+            tf.summary.scalar(k, v)
+        summary_op = tf.summary.merge_all()
+        # self.summary_op = tf.summary.merge([
+        #     # tf.summary.image("G", self.G),
+        #     # tf.summary.image("AE_G", self.AE_G),
+        #     # tf.summary.image("AE_x", self.AE_x),
+        #     tf.summary.scalar("loss/d_loss", self.d_loss),
+        #     tf.summary.scalar("loss/d_loss_real", self.d_loss_real),
+        #     tf.summary.scalar("loss/d_loss_fake", self.d_loss_fake),
+        #     tf.summary.scalar("loss/g_loss", self.g_loss),
+        #     tf.summary.scalar("misc/measure", self.measure),
+        #     tf.summary.scalar("misc/k_t", self.k_t),
+        #     tf.summary.scalar("misc/d_lr", self.d_lr),
+        #     tf.summary.scalar("misc/g_lr", self.g_lr),
+        #     tf.summary.scalar("misc/balance", self.balance),
+        # ])
+        summary_writer = tf.summary.FileWriter(self.logdir)
+        saver = tf.train.Saver()
 
-            all_vars = tf.trainable_variables()
-            d_vars = [var for var in all_vars if var.name.startswith('vae_d')]
-            g_vars = [var for var in all_vars if var.name.startswith('vae_g')]
-            d_trainer = self.d_optimizer.minimize(self.d_loss, var_list=d_vars)
-            g_trainer = self.g_optimizer.minimize(self.g_loss, var_list=g_vars)
+        # # Get loss_gen
+        # self.real_loss = self.get_real_loss(self.x_input, x_rec)
+        # self.log_vars.append(("real_loss", tf.reduce_mean(self.real_loss)))
+        # self.g_loss = self.get_fake_loss(x_gen, x_gen_rec)
+        # self.log_vars.append(("fake_loss", tf.reduce_mean(self.g_loss)))
+        # self.d_loss = self.get_d_loss(self.real_loss, self.g_loss)
+        # self.log_vars.append(("d_loss", tf.reduce_mean(self.d_loss)))
+        #
+        # self.balance = self.gamma * self.real_loss - self.g_loss
+        # self.log_vars.append(("balance", tf.reduce_mean(self.balance)))
+        # self.measure = self.real_loss + tf.abs(self.balance)
+        # self.log_vars.append(("measure", tf.reduce_mean(self.measure)))
+        # self.k_t_update = self.lambda_k * self.balance
+        # self.log_vars.append(("k_t_update", tf.reduce_mean(self.k_t_update)))
+        #
+        # all_vars = tf.trainable_variables()
+        # d_vars = [var for var in all_vars if var.name.startswith('vae_d')]
+        # g_vars = [var for var in all_vars if var.name.startswith('vae_g')]
+        # d_trainer = self.d_optimizer.minimize(self.d_loss, var_list=d_vars)
+        # g_trainer = self.g_optimizer.minimize(self.g_loss, var_list=g_vars)
 
-            # run iteration
-            init = tf.global_variables_initializer()
-            sess.run(init)
-            log_vars = [x for _, x in self.log_vars]
-            log_keys = [x for x, _ in self.log_vars]
-            for k, v in self.log_vars:
-                tf.summary.scalar(k, v)
-            summary_op = tf.summary.merge_all()
-            # self.summary_op = tf.summary.merge([
-            #     # tf.summary.image("G", self.G),
-            #     # tf.summary.image("AE_G", self.AE_G),
-            #     # tf.summary.image("AE_x", self.AE_x),
-            #     tf.summary.scalar("loss/d_loss", self.d_loss),
-            #     tf.summary.scalar("loss/d_loss_real", self.d_loss_real),
-            #     tf.summary.scalar("loss/d_loss_fake", self.d_loss_fake),
-            #     tf.summary.scalar("loss/g_loss", self.g_loss),
-            #     tf.summary.scalar("misc/measure", self.measure),
-            #     tf.summary.scalar("misc/k_t", self.k_t),
-            #     tf.summary.scalar("misc/d_lr", self.d_lr),
-            #     tf.summary.scalar("misc/g_lr", self.g_lr),
-            #     tf.summary.scalar("misc/balance", self.balance),
-            # ])
-            summary_writer = tf.summary.FileWriter(self.logdir, sess.graph)
-            saver = tf.train.Saver()
+        # run iteration
 
-            counter = 0
-            for epoch in tqdm(range(epochs)):
-                it_per_ep = len(self.X_train) / self.batch_size
-                all_log_vals = []
-                for i in range(it_per_ep):  # 1875 * 32 = 60000 -> # of training samples
-                    counter += 1
-                    x_train = self.X_train[i * self.batch_size:(i + 1) * self.batch_size]
-                    y_train = self.y_train[i * self.batch_size:(i + 1) * self.batch_size]
-                    z_input = np.random.uniform(-1, 1, size=(self.batch_size, self.latent_dim)).astype('float32')
-                    feed_dict = {self.x_input: x_train, self.y_input: y_train, self.z_input:z_input}
-                    # train D
-                    sess.run(d_trainer, feed_dict)
-                    # train G
-                    log_vals = sess.run([g_trainer]+log_vars, feed_dict)[1:]
-                    # train k_t and get logs
-                    self.k_t += sess.run(self.k_t_update,feed_dict)
-                    if self.k_t<0.0:
-                        self.k_t = 0.0
-                    elif self.k_t>1.0:
-                        self.k_t = 1.0
-                    log_vals[0] = self.k_t
-                    all_log_vals.append(log_vals)
+        self.step = tf.Variable(0, name='step', trainable=False)
+        sv = tf.train.Supervisor(
+                                # logdir=self.model_dir,
+                                is_chief=True,
+                                # saver=self.saver,
+                                summary_op=None,
+                                # summary_writer=self.summary_writer,
+                                save_model_secs=300,
+                                global_step=self.step,
+                                ready_for_local_init_op=None)
 
-                    if counter % self.snapshot_interval == 0:
-                        snapshot_name = "%s_%s" % ('experiment', str(counter))
-                        fn = saver.save(sess, "%s/%s.ckpt" % (self.modeldir, snapshot_name))
-                        print("Model saved in file: %s" % fn)
+        gpu_options = tf.GPUOptions(allow_growth=True)
+        sess_config = tf.ConfigProto(allow_soft_placement=True,
+                                    gpu_options=gpu_options)
+        sess = sv.prepare_or_wait_for_session(config=sess_config)
 
+        # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.3)
+        # sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+
+        # init = tf.global_variables_initializer()
+        # sess.run(init)
+
+        counter = 0
+        # for epoch in tqdm(range(epochs)):
+        #     it_per_ep = len(self.X_train) / self.batch_size
+        all_log_vals = []
+        for i in tqdm(range(10000)):  # 1875 * 32 = 60000 -> # of training samples
+            counter += 1
+            # x_train = self.X_train[i * self.batch_size:(i + 1) * self.batch_size]
+            # y_train = self.y_train[i * self.batch_size:(i + 1) * self.batch_size]
+            # y_train = np.zeros((self.batch_size, self.n_attributes))
+            # z_input = np.random.uniform(-1, 1, size=(self.batch_size, self.latent_dim)).astype('float32')
+            # feed_dict = {self.x_input: x_train, self.y_input: y_train, self.z_input:z_input}
+            # train D, train G, k_t, get logs
+            fetch_dict = {
+                "k_update": self.k_update,
+                "k_t": self.k_t,
+                "measure": self.measure,
+                "z": self.z_input,
+                "x": self.x_input,
+                "x_rec": self.x_rec,
+                "x_gen": self.x_gen,
+                "x_gen_rec": self.x_gen_rec,
+                "d_loss": self.d_loss,
+                "g_loss": self.g_loss,
+            }
+            result = sess.run(fetch_dict)
+            # train
+            # self.k_t += result[2]
+            # log_vals = result[3:]
+            # if self.k_t<0.0:
+            #     self.k_t = 0.0
+            # elif self.k_t>1.0:
+            #     self.k_t = 1.0
+            # log_vals[0] = self.k_t
+            # all_log_vals.append(result)
+            print(result['d_loss'], result['g_loss'], result['measure'], result['k_t'])
+
+            if counter % self.snapshot_interval == 0:
+            #     snapshot_name = "%s_%s" % ('experiment', str(counter))
+            #     fn = saver.save(sess, "%s/%s.ckpt" % (self.modeldir, snapshot_name))
+            #     print("Model saved in file: %s" % fn)
                 # output to terminal
-                avg_log_vals = np.mean(np.array(all_log_vals), axis=0)
-                log_line = "; ".join("%s: %s" % (str(k), str(v)) for k, v in zip(log_keys, avg_log_vals))
-                print("Epoch %d | " % (epoch) + log_line)
-                sys.stdout.flush()
-                if np.any(np.isnan(avg_log_vals)):
-                    raise ValueError("NaN detected!")
+                # avg_log_vals = np.mean(np.array(all_log_vals), axis=0)
+                # log_line = "; ".join("%s: %s" % (str(k), str(v)) for k, v in zip(log_keys, avg_log_vals))
+                # print("Epoch %d | " % (i) + log_line)
+                # sys.stdout.flush()
+                # if np.any(np.isnan(avg_log_vals)):
+                #     raise ValueError("NaN detected!")
 
-                # output to tensorboard
-                x_train = self.X_train[i * self.batch_size:(i + 1) * self.batch_size]
-                y_train = self.y_train[i * self.batch_size:(i + 1) * self.batch_size]
-                z_input = np.random.uniform(-1, 1, size=(self.batch_size, self.latent_dim)).astype('float32')
-                feed_dict = {self.x_input: x_train, self.y_input: y_train, self.z_input:z_input}
-                summary_str = sess.run(summary_op, feed_dict)
-                summary_writer.add_summary(summary_str, counter)
+                # # output to tensorboard
+                # x_train = self.X_train[i * self.batch_size:(i + 1) * self.batch_size]
+                # y_train = self.y_train[i * self.batch_size:(i + 1) * self.batch_size]
+                # z_input = np.random.uniform(-1, 1, size=(self.batch_size, self.latent_dim)).astype('float32')
+                # feed_dict = {self.x_input: x_train, self.y_input: y_train, self.z_input:z_input}
+                # summary_str = sess.run(summary_op, feed_dict)
+                # summary_writer.add_summary(summary_str, counter)
 
                 # save reconstructed images
-                x_rec_img = sess.run(x_rec, feed_dict)
-                x_gen_img = sess.run(x_gen, feed_dict)
-                # feed_dict = {self.x_input: x_gen_img, self.y_input: y_train, self.z_input:z_input}
-                # x_gen_rec_img = sess.run(x_rec, feed_dict)
-                x_gen_rec_img = sess.run(x_gen_rec, feed_dict)
-                all_G_z = np.concatenate([255 * (x_train[0:8] + 1) / 2, 255 * (x_rec_img[0:8] + 1) / 2,
-                                          255 * (x_gen_img[0:8] + 1) / 2,255 * (x_gen_rec_img[0:8] + 1) / 2])
-                save_image(all_G_z, '{}/epoch_{}_{}.png'.format(self.logdir, epoch, log_line))
+                # x_rec_img = sess.run(x_rec, fetch_dict)
+                # x_gen_img = sess.run(x_gen, fetch_dict)
+                # # feed_dict = {self.x_input: x_gen_img, self.y_input: y_train, self.z_input:z_input}
+                # # x_gen_rec_img = sess.run(x_rec, feed_dict)
+                # x_gen_rec_img = sess.run(x_gen_rec, feed_dict)
+                x_train, x_rec_img, x_gen_img, x_gen_rec_img = result['x'], result['x_rec'], result['x_gen'], result['x_gen_rec']
+                all_G_z = np.concatenate([x_train[0:8].transpose((0,2,3,1)), 255 * (x_rec_img[0:8].transpose((0,2,3,1)) + 1) / 2,
+                                          255 * (x_gen_img[0:8].transpose((0,2,3,1)) + 1) / 2,255 * (x_gen_rec_img[0:8].transpose((0,2,3,1)) + 1) / 2])
+                save_image(all_G_z, '{}/itr{}.png'.format(self.logdir, i))
 
 
 class GAN3(object):
     def __init__(self,cfg):
         self.log_vars = []
+        self.cfg = cfg
 
         self.gamma = tf.cast(cfg['gamma'], tf.float32)
         self.lambda_k = tf.cast(cfg['lambda_k'], tf.float32)
         self.k_t = cfg['k_t']
         self.log_vars.append(("k_t", tf.reduce_mean(self.k_t)))
 
-        self.vae_g = VAE(cfg)
-        self.vae_d = VAE(cfg)
+        cfg_g = cfg
+        # cfg_g['batch_size'] = cfg['batch_size']/2
+        self.vae_g = VAE(cfg_g)
+        cfg_d = cfg
+        cfg_d['batch_size'] = cfg['batch_size']*2
+        self.vae_d = VAE(cfg_d)
         # Working and saving dir
         self.logdir,self.modeldir = self.vae_g.creat_dir('GAN')
         save_config(cfg, self.modeldir)
@@ -816,14 +896,14 @@ class GAN3(object):
         self.n_blocks = cfg['n_blocks']
         # define VAE network
         # Optimizer Parameter Setting
-        self.batch_size = cfg['batch_size']
+        # self.batch_size = cfg['batch_size']
         self.optimizer = cfg['vae_optimizer']
         self.vae_lr = cfg['vae_lr']
         self.snapshot_interval = cfg['snapshot_interval']
 
-        self.x_input = tf.placeholder(tf.float32, [self.batch_size, self.img_size, self.img_size, self.n_ch_in],name='x_input')
-        self.y_input = tf.placeholder(tf.float32, [self.batch_size, self.n_attributes],name='y_input')
-        self.z_input = tf.placeholder(tf.float32, [self.batch_size, self.latent_dim],name='z_input')
+        self.x_input = tf.placeholder(tf.float32, [self.vae_g.batch_size, self.img_size, self.img_size, self.n_ch_in],name='x_input')
+        self.y_input = tf.placeholder(tf.float32, [self.vae_g.batch_size, self.n_attributes],name='y_input')
+        self.z_input = tf.placeholder(tf.float32, [self.vae_g.batch_size, self.latent_dim],name='z_input')
 
     def get_real_loss(self,x_input, x_rec):
         # real_rec_loss = objectives.binary_crossentropy(x_input, x_gen)
@@ -856,15 +936,15 @@ class GAN3(object):
                 x_gen = tf.identity(x_gen, name="x_gen")
                 sig_x_gen = tf.nn.sigmoid(x_gen, name='sig_x_gen')
             with tf.variable_scope("vae_d", reuse=True):
-                # # with tf.variable_scope("pass1", reuse=True):
-                x_rec , sig_x_rec = self.vae_d.def_vae(self.n_blocks, self.x_input)
-                x_rec = tf.identity(x_rec, name="x_rec")
-                # with tf.variable_scope("pass2", reuse=True):
-                x_gen_rec, sig_x_gen_rec = self.vae_d.def_vae(self.n_blocks, x_gen)
-                x_gen_rec = tf.identity(x_gen_rec, name="x_gen_rec")
+                # # # with tf.variable_scope("pass1", reuse=True):
+                # x_rec , sig_x_rec = self.vae_d.def_vae(self.n_blocks, self.x_input)
+                # x_rec = tf.identity(x_rec, name="x_rec")
+                # # with tf.variable_scope("pass2", reuse=True):
+                # x_gen_rec, sig_x_gen_rec = self.vae_d.def_vae(self.n_blocks, x_gen)
+                # x_gen_rec = tf.identity(x_gen_rec, name="x_gen_rec")
                 # _, x_rec_rec = self.vae_d.def_vae(self.n_blocks, x_rec)
-                # d_out, _ = self.vae_d.def_vae(self.n_blocks, tf.concat([self.x_input, x_gen], 0))
-                # x_rec, x_gen_rec = tf.split(d_out,2)
+                d_out, _ = self.vae_d.def_vae(self.n_blocks, tf.concat([self.x_input, x_gen], 0))
+                x_rec, x_gen_rec = tf.split(d_out,2)
 
             # Get loss_gen
             self.real_loss = self.get_real_loss(self.x_input, x_rec)
@@ -895,32 +975,18 @@ class GAN3(object):
             for k, v in self.log_vars:
                 tf.summary.scalar(k, v)
             summary_op = tf.summary.merge_all()
-            # self.summary_op = tf.summary.merge([
-            #     # tf.summary.image("G", self.G),
-            #     # tf.summary.image("AE_G", self.AE_G),
-            #     # tf.summary.image("AE_x", self.AE_x),
-            #     tf.summary.scalar("loss/d_loss", self.d_loss),
-            #     tf.summary.scalar("loss/d_loss_real", self.d_loss_real),
-            #     tf.summary.scalar("loss/d_loss_fake", self.d_loss_fake),
-            #     tf.summary.scalar("loss/g_loss", self.g_loss),
-            #     tf.summary.scalar("misc/measure", self.measure),
-            #     tf.summary.scalar("misc/k_t", self.k_t),
-            #     tf.summary.scalar("misc/d_lr", self.d_lr),
-            #     tf.summary.scalar("misc/g_lr", self.g_lr),
-            #     tf.summary.scalar("misc/balance", self.balance),
-            # ])
             summary_writer = tf.summary.FileWriter(self.logdir, sess.graph)
             saver = tf.train.Saver()
 
             counter = 0
             for epoch in tqdm(range(epochs)):
-                it_per_ep = len(self.X_train) / self.batch_size
+                it_per_ep = len(self.X_train) / self.vae_g.batch_size
                 all_log_vals = []
                 for i in range(it_per_ep):  # 1875 * 32 = 60000 -> # of training samples
                     counter += 1
-                    x_train = self.X_train[i * self.batch_size:(i + 1) * self.batch_size]
-                    y_train = self.y_train[i * self.batch_size:(i + 1) * self.batch_size]
-                    z_input = np.random.uniform(-1, 1, size=(self.batch_size, self.latent_dim)).astype('float32')
+                    x_train = self.X_train[i * self.vae_g.batch_size:(i + 1) * self.vae_g.batch_size]
+                    y_train = self.y_train[i * self.vae_g.batch_size:(i + 1) * self.vae_g.batch_size]
+                    z_input = np.random.uniform(-1, 1, size=(self.vae_g.batch_size, self.latent_dim)).astype('float32')
                     feed_dict = {self.x_input: x_train, self.y_input: y_train, self.z_input:z_input}
                     # train D
                     sess.run(d_trainer, feed_dict)
@@ -949,9 +1015,9 @@ class GAN3(object):
                     raise ValueError("NaN detected!")
 
                 # output to tensorboard
-                x_train = self.X_train[i * self.batch_size:(i + 1) * self.batch_size]
-                y_train = self.y_train[i * self.batch_size:(i + 1) * self.batch_size]
-                z_input = np.random.uniform(-1, 1, size=(self.batch_size, self.latent_dim)).astype('float32')
+                x_train = self.X_train[i * self.vae_g.batch_size:(i + 1) * self.vae_g.batch_size]
+                y_train = self.y_train[i * self.vae_g.batch_size:(i + 1) * self.vae_g.batch_size]
+                z_input = np.random.uniform(-1, 1, size=(self.vae_g.batch_size, self.latent_dim)).astype('float32')
                 feed_dict = {self.x_input: x_train, self.y_input: y_train, self.z_input:z_input}
                 summary_str = sess.run(summary_op, feed_dict)
                 summary_writer.add_summary(summary_str, counter)
@@ -1131,25 +1197,25 @@ if __name__ == "__main__":
            'n_filters': 32,
            'filter_size': (3,3),
            'max_epochs': 1000,
-           'latent_dim': 128,
+           'latent_dim': 64,
            'vae_optimizer': 'adadelta',
            'vae_lr': 8e-1,
-           'g_lr': 1.5e-4,
-           'd_lr': 1.5e-4,
+           'g_lr': 0.00008,
+           'd_lr': 0.00008,
            'g_optimizer': 'adam',
            'd_optimizer': 'adam',
-           'gamma': 0.3,
+           'gamma': 0.5,
            'lambda_k': 0.001,
            'k_t': 0.0,
            # 'learning_rate': lr_schedule,
            'vae': False,
            'datadir': '/home/hope-yao/Documents/Data',
            'pre_train': 0, # how many steps to pretrain the VAE
-           'snapshot_interval': 10000,
+           'snapshot_interval': 10,
            }
 
     # vae = VAE(cfg)
     # vae.train_vae()
 
-    gan = GAN3(cfg)
+    gan = GAN4(cfg)
     gan.train_gan()
