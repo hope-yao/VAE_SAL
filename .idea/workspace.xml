@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9095eff0-9b9a-48b8-8d3a-556039fdab1d" name="Default" comment="">
+    <list default="true" id="9095eff0-9b9a-48b8-8d3a-556039fdab1d" name="Default" comment="GAN3 corrected some activation issue in the AE network">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/AE_GAN_TF.py" afterPath="$PROJECT_DIR$/AE_GAN_TF.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/GAN/summary.txt" afterPath="$PROJECT_DIR$/GAN/summary.txt" />
     </list>
     <ignored path="3D VAE.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -22,14 +23,14 @@
     <favorites_list name="3D VAE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.7234181">
+    <splitter split-orientation="horizontal" split-proportion="0.778865">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file leaf-file-name="AE_GAN_TF.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/AE_GAN_TF.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="188">
-                  <caret line="658" column="0" selection-start-line="658" selection-start-column="0" selection-end-line="658" selection-end-column="0" />
+                <state relative-caret-position="257">
+                  <caret line="824" column="66" selection-start-line="824" selection-start-column="66" selection-end-line="824" selection-end-column="66" />
                   <folding>
                     <element signature="e#456#479#0" expanded="true" />
                     <element signature="e#728#1358#0" expanded="false" />
@@ -39,26 +40,21 @@
                     <element signature="e#1921#2179#0" expanded="false" />
                     <element signature="e#2304#2512#0" expanded="false" />
                     <element signature="e#2554#2676#0" expanded="false" />
+                    <element signature="e#2975#3172#0" expanded="false" />
                     <element signature="e#3233#3453#0" expanded="false" />
                     <element signature="e#3495#3609#0" expanded="false" />
-                    <element signature="e#3634#16291#0" expanded="false" />
-                    <element signature="e#5007#5822#0" expanded="false" />
-                    <element signature="e#5863#6204#0" expanded="false" />
-                    <element signature="e#5964#6012#0" expanded="false" />
-                    <element signature="e#6065#6120#0" expanded="false" />
-                    <element signature="e#6258#6391#0" expanded="false" />
-                    <element signature="e#7335#8156#0" expanded="false" />
-                    <element signature="e#8203#9009#0" expanded="false" />
-                    <element signature="e#9063#9655#0" expanded="false" />
-                    <element signature="e#9709#10361#0" expanded="false" />
-                    <element signature="e#10413#10760#0" expanded="false" />
-                    <element signature="e#10812#11179#0" expanded="false" />
-                    <element signature="e#11237#11416#0" expanded="false" />
-                    <element signature="e#12000#12084#0" expanded="false" />
-                    <element signature="e#16193#16255#0" expanded="false" />
-                    <element signature="e#16291#16308#0" expanded="false" />
-                    <element signature="e#28360#28398#0" expanded="false" />
-                    <element signature="e#33221#33222#0" expanded="false" />
+                    <element signature="e#11805#15605#0" expanded="false" />
+                    <element signature="e#16374#16391#0" expanded="false" />
+                    <element signature="e#45516#45517#0" expanded="false" />
+                    <marker date="1494297937329" expanded="false" signature="5955:6305" ph="..." />
+                    <marker date="1494297937329" expanded="false" signature="6052:6113" ph="..." />
+                    <marker date="1494297937329" expanded="false" signature="6153:6221" ph="..." />
+                    <marker date="1494297937329" expanded="false" signature="6350:6492" ph="..." />
+                    <marker date="1494297937329" expanded="false" signature="9783:10444" ph="..." />
+                    <marker date="1494297937329" expanded="false" signature="11310:11499" ph="..." />
+                    <marker date="1494297937329" expanded="false" signature="12070:12167" ph="..." />
+                    <marker date="1494297937329" expanded="false" signature="16263:16338" ph="..." />
+                    <marker date="1494297937329" expanded="false" signature="31224:32039" ph="..." />
                   </folding>
                 </state>
               </provider>
@@ -139,8 +135,8 @@
           <file leaf-file-name="summary.txt" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/GAN/summary.txt">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="330">
-                  <caret line="22" column="106" selection-start-line="22" selection-start-column="106" selection-end-line="22" selection-end-column="106" />
+                <state relative-caret-position="405">
+                  <caret line="27" column="119" selection-start-line="27" selection-start-column="119" selection-end-line="27" selection-end-column="119" />
                   <folding />
                 </state>
               </provider>
@@ -841,12 +837,19 @@
       <option name="project" value="LOCAL" />
       <updated>1494190975625</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="Network runs smoothly this time. Reconstruction is good, however, the generation is very bad and seems to have mode collapse.">
+      <created>1494202918446</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1494202918446</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="1985" y="24" width="1855" height="1056" extended-state="6" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.14691152" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -910,7 +913,8 @@
     <MESSAGE value="Added k_t to the code" />
     <MESSAGE value="Identified a k_t updating problem. Don't know the causal to it though..." />
     <MESSAGE value="Another problem find. Different name scope will create 2 discriminator." />
-    <option name="LAST_COMMIT_MESSAGE" value="Another problem find. Different name scope will create 2 discriminator." />
+    <MESSAGE value="Network runs smoothly this time. Reconstruction is good, however, the generation is very bad and seems to have mode collapse." />
+    <option name="LAST_COMMIT_MESSAGE" value="Network runs smoothly this time. Reconstruction is good, however, the generation is very bad and seems to have mode collapse." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -992,8 +996,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/AE_GAN_TF.py</url>
-          <line>699</line>
-          <option name="timeStamp" value="320" />
+          <line>865</line>
+          <option name="timeStamp" value="373" />
         </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
@@ -1006,7 +1010,7 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="361" />
+      <option name="time" value="374" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -1148,6 +1152,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-259">
           <caret line="772" column="14" selection-start-line="772" selection-start-column="14" selection-end-line="772" selection-end-column="14" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1889,6 +1894,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="25170">
           <caret line="1683" column="0" selection-start-line="1683" selection-start-column="0" selection-end-line="1683" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2022,14 +2028,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/GAN/summary.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="330">
-          <caret line="22" column="106" selection-start-line="22" selection-start-column="106" selection-end-line="22" selection-end-column="106" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/python/ops/clip_ops.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="345">
@@ -2089,10 +2087,18 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/GAN/summary.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="405">
+          <caret line="27" column="119" selection-start-line="27" selection-start-column="119" selection-end-line="27" selection-end-column="119" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/AE_GAN_TF.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="188">
-          <caret line="658" column="0" selection-start-line="658" selection-start-column="0" selection-end-line="658" selection-end-column="0" />
+        <state relative-caret-position="257">
+          <caret line="824" column="66" selection-start-line="824" selection-start-column="66" selection-end-line="824" selection-end-column="66" />
           <folding>
             <element signature="e#456#479#0" expanded="true" />
             <element signature="e#728#1358#0" expanded="false" />
@@ -2102,26 +2108,21 @@
             <element signature="e#1921#2179#0" expanded="false" />
             <element signature="e#2304#2512#0" expanded="false" />
             <element signature="e#2554#2676#0" expanded="false" />
+            <element signature="e#2975#3172#0" expanded="false" />
             <element signature="e#3233#3453#0" expanded="false" />
             <element signature="e#3495#3609#0" expanded="false" />
-            <element signature="e#3634#16291#0" expanded="false" />
-            <element signature="e#5007#5822#0" expanded="false" />
-            <element signature="e#5863#6204#0" expanded="false" />
-            <element signature="e#5964#6012#0" expanded="false" />
-            <element signature="e#6065#6120#0" expanded="false" />
-            <element signature="e#6258#6391#0" expanded="false" />
-            <element signature="e#7335#8156#0" expanded="false" />
-            <element signature="e#8203#9009#0" expanded="false" />
-            <element signature="e#9063#9655#0" expanded="false" />
-            <element signature="e#9709#10361#0" expanded="false" />
-            <element signature="e#10413#10760#0" expanded="false" />
-            <element signature="e#10812#11179#0" expanded="false" />
-            <element signature="e#11237#11416#0" expanded="false" />
-            <element signature="e#12000#12084#0" expanded="false" />
-            <element signature="e#16193#16255#0" expanded="false" />
-            <element signature="e#16291#16308#0" expanded="false" />
-            <element signature="e#28360#28398#0" expanded="false" />
-            <element signature="e#33221#33222#0" expanded="false" />
+            <element signature="e#11805#15605#0" expanded="false" />
+            <element signature="e#16374#16391#0" expanded="false" />
+            <element signature="e#45516#45517#0" expanded="false" />
+            <marker date="1494297937329" expanded="false" signature="5955:6305" ph="..." />
+            <marker date="1494297937329" expanded="false" signature="6052:6113" ph="..." />
+            <marker date="1494297937329" expanded="false" signature="6153:6221" ph="..." />
+            <marker date="1494297937329" expanded="false" signature="6350:6492" ph="..." />
+            <marker date="1494297937329" expanded="false" signature="9783:10444" ph="..." />
+            <marker date="1494297937329" expanded="false" signature="11310:11499" ph="..." />
+            <marker date="1494297937329" expanded="false" signature="12070:12167" ph="..." />
+            <marker date="1494297937329" expanded="false" signature="16263:16338" ph="..." />
+            <marker date="1494297937329" expanded="false" signature="31224:32039" ph="..." />
           </folding>
         </state>
       </provider>

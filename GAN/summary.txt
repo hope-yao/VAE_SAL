@@ -21,3 +21,8 @@
 17. Similar to VGG block, 3 Incep block is still worse than 2 Incep block
 
 18. the value of k_t is important to training. Unconverging if set it to 1, converging well if set to 0.01
+
+19. All generating cases have mode collapse so far. Only plausible generation is using parameter settings in GAN_2017_05_08_14_08_16. No k_t clip and x_input normalization here.
+20. GAN_2017_05_08_15_15_09 tend to have balanced D and G loss
+
+21. It is said in the repo issue that FC layer perfers no activation. This helps to solve mode collapse. But VAE need a
