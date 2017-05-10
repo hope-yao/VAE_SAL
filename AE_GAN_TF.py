@@ -654,20 +654,22 @@ class GAN4(object):
         self.D_dec_var  = tf.contrib.framework.get_variables(D_dec)
 
         self.x_rec, self.x_gen, self.x_gen_rec, self.x_rec_rec = x_rec, x_gen, x_gen_rec, x_rec_rec
-        g_optimizer, d_optimizer = tf.train.AdamOptimizer(self.g_lr), tf.train.AdamOptimizer(self.d_lr)
+        enc_optimizer, g_optimizer, d_optimizer = tf.train.AdamOptimizer(self.g_lr),tf.train.AdamOptimizer(self.g_lr), tf.train.AdamOptimizer(self.d_lr)
 
         self.d_loss_real = tf.reduce_mean(tf.abs(x_rec - x))
-        self.d_loss_fake = tf.reduce_mean(tf.abs(x_gen_rec - x_gen)) + tf.reduce_mean(tf.abs(x_rec_rec - x_rec)) # change into difference in activation
+        self.d_loss_fake_gen = tf.reduce_mean(tf.abs(x_gen_rec - x_gen))
+        self.d_loss_fake_rec = tf.reduce_mean(tf.abs(x_rec_rec - x_rec)) # change into difference in activation
 
-        self.d_loss = self.d_loss_real - self.k_t * self.d_loss_fake
-        self.g_loss = self.d_loss_fake
+        self.g_loss = self.d_loss_fake_gen + self.d_loss_fake_rec
+        self.d_loss = self.d_loss_real - self.k_t * self.g_loss
         self.balance = self.gamma * self.d_loss_real - self.g_loss
         self.measure = self.d_loss_real + tf.abs(self.balance)
 
         self.step = tf.Variable(0, name='step', trainable=False)
         d_optim = d_optimizer.minimize(self.d_loss, var_list=self.D_dec_var+self.D_enc_var)
-        g_optim = g_optimizer.minimize(self.g_loss, global_step=self.step, var_list=self.G_dec_var+self.G_enc_var)
-        with tf.control_dependencies([d_optim, g_optim]):
+        dec_optim = g_optimizer.minimize(self.d_loss_fake_gen, global_step=self.step, var_list=self.G_dec_var)
+        g_optim = g_optimizer.minimize(self.d_loss_fake_rec, global_step=self.step, var_list=self.G_dec_var+self.G_enc_var)
+        with tf.control_dependencies([d_optim, dec_optim, g_optim]):
             self.k_update = tf.assign(
                 self.k_t, tf.clip_by_value(self.k_t + self.lambda_k * self.balance, 0, 1))
         for k, v in self.log_vars:
@@ -675,7 +677,8 @@ class GAN4(object):
         self.summary_op = tf.summary.merge([
             tf.summary.scalar("loss/d_loss", self.d_loss),
             tf.summary.scalar("loss/d_loss_real", self.d_loss_real),
-            tf.summary.scalar("loss/d_loss_fake", self.d_loss_fake),
+            tf.summary.scalar("loss/d_loss_fake_rec", self.d_loss_fake_rec),
+            tf.summary.scalar("loss/d_loss_fake_gen", self.d_loss_fake_gen),
             tf.summary.scalar("loss/g_loss", self.g_loss),
             tf.summary.scalar("misc/measure", self.measure),
             tf.summary.scalar("misc/k_t", self.k_t),
@@ -713,6 +716,7 @@ class GAN4(object):
                 "z": self.z_input,
                 "x": self.x_input,
                 "x_rec": self.x_rec,
+                "x_rec_rec": self.x_rec_rec,
                 "x_gen": self.x_gen,
                 "x_gen_rec": self.x_gen_rec,
                 "d_loss": self.d_loss,
@@ -724,9 +728,12 @@ class GAN4(object):
             print(result['d_loss'], result['g_loss'], result['measure'], result['k_t'])
 
             if counter % self.snapshot_interval == 0:
-                x_train, x_rec_img, x_gen_img, x_gen_rec_img = result['x'], result['x_rec'], result['x_gen'], result['x_gen_rec']
-                all_G_z = np.concatenate([x_train[0:8].transpose((0,2,3,1)), 255 * (x_rec_img[0:8].transpose((0,2,3,1)) + 1) / 2,
-                                          255 * (x_gen_img[0:8].transpose((0,2,3,1)) + 1) / 2,255 * (x_gen_rec_img[0:8].transpose((0,2,3,1)) + 1) / 2])
+                x_train, x_rec_img, x_gen_img, x_gen_rec_img, x_rec_rec_img = result['x'], result['x_rec'], result['x_gen'], result['x_gen_rec'], result['x_rec_rec']
+                all_G_z = np.concatenate([x_train[0:8].transpose((0,2,3,1)),
+                                          255 * (x_rec_img[0:8].transpose((0, 2, 3, 1)) + 1) / 2,
+                                          255 * (x_rec_rec_img[0:8].transpose((0, 2, 3, 1)) + 1) / 2,
+                                          255 * (x_gen_img[0:8].transpose((0,2,3,1)) + 1) / 2,
+                                          255 * (x_gen_rec_img[0:8].transpose((0,2,3,1)) + 1) / 2])
                 save_image(all_G_z, '{}/itr{}.png'.format(self.logdir, i))
 
 
