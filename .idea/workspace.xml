@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9095eff0-9b9a-48b8-8d3a-556039fdab1d" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/VAE_GAN_BAK" />
+    <list default="true" id="9095eff0-9b9a-48b8-8d3a-556039fdab1d" name="Default" comment="Vanilla EBGAN is running. Starting to add g_enc now">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/AE_GAN_TF.py" afterPath="$PROJECT_DIR$/AE_GAN_TF.py" />
     </list>
@@ -29,8 +28,8 @@
           <file leaf-file-name="AE_GAN_TF.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/AE_GAN_TF.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="540">
-                  <caret line="640" column="0" selection-start-line="640" selection-start-column="0" selection-end-line="640" selection-end-column="0" />
+                <state relative-caret-position="362">
+                  <caret line="662" column="38" selection-start-line="662" selection-start-column="38" selection-end-line="662" selection-end-column="38" />
                   <folding>
                     <element signature="e#456#479#0" expanded="true" />
                     <element signature="e#728#1358#0" expanded="false" />
@@ -69,15 +68,15 @@
                     <element signature="e#20679#21316#0" expanded="false" />
                     <element signature="e#21378#21715#0" expanded="false" />
                     <element signature="e#21777#22134#0" expanded="false" />
-                    <element signature="e#23220#23807#0" expanded="false" />
-                    <marker date="1494389135194" expanded="false" signature="6298:6648" ph="..." />
-                    <marker date="1494389135194" expanded="false" signature="6395:6456" ph="..." />
-                    <marker date="1494389135194" expanded="false" signature="6496:6564" ph="..." />
-                    <marker date="1494389135194" expanded="false" signature="6693:6835" ph="..." />
-                    <marker date="1494389135194" expanded="false" signature="10126:10787" ph="..." />
-                    <marker date="1494389135194" expanded="false" signature="11653:11842" ph="..." />
-                    <marker date="1494389135194" expanded="false" signature="12413:12510" ph="..." />
-                    <marker date="1494389135194" expanded="false" signature="16606:16681" ph="..." />
+                    <element signature="e#22269#23100#0" expanded="false" />
+                    <marker date="1494394419700" expanded="false" signature="6298:6648" ph="..." />
+                    <marker date="1494394419700" expanded="false" signature="6395:6456" ph="..." />
+                    <marker date="1494394419700" expanded="false" signature="6496:6564" ph="..." />
+                    <marker date="1494394419700" expanded="false" signature="6693:6835" ph="..." />
+                    <marker date="1494394419700" expanded="false" signature="10126:10787" ph="..." />
+                    <marker date="1494394419700" expanded="false" signature="11653:11842" ph="..." />
+                    <marker date="1494394419700" expanded="false" signature="12413:12510" ph="..." />
+                    <marker date="1494394419700" expanded="false" signature="16606:16681" ph="..." />
                   </folding>
                 </state>
               </provider>
@@ -86,8 +85,8 @@
           <file leaf-file-name="VAE_GAN_BAK" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/VAE_GAN_BAK">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="105">
-                  <caret line="150" column="38" selection-start-line="150" selection-start-column="38" selection-end-line="150" selection-end-column="38" />
+                <state relative-caret-position="480">
+                  <caret line="211" column="80" selection-start-line="211" selection-start-column="13" selection-end-line="211" selection-end-column="80" />
                   <folding />
                 </state>
               </provider>
@@ -853,12 +852,19 @@
       <option name="project" value="LOCAL" />
       <updated>1494372294501</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="Vanilla EBGAN is running. Starting to add g_enc now">
+      <created>1494389173716</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1494389173716</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="65" y="24" width="1855" height="1056" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.14691152" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -867,7 +873,7 @@
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32832617" sideWeight="0.49582636" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3583691" sideWeight="0.61769617" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32939914" sideWeight="0.4980523" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.27038628" sideWeight="0.7762938" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.27038628" sideWeight="0.7762938" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -925,7 +931,8 @@
     <MESSAGE value="Network runs smoothly this time. Reconstruction is good, however, the generation is very bad and seems to have mode collapse." />
     <MESSAGE value="GAN3 corrected some activation issue in the AE network, but mode collapse still exists. Working on GAN4 to match BEGAN" />
     <MESSAGE value="GAN4 used the training schedule of BEGAN, which seems to work now" />
-    <option name="LAST_COMMIT_MESSAGE" value="GAN4 used the training schedule of BEGAN, which seems to work now" />
+    <MESSAGE value="Vanilla EBGAN is running. Starting to add g_enc now" />
+    <option name="LAST_COMMIT_MESSAGE" value="Vanilla EBGAN is running. Starting to add g_enc now" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1015,11 +1022,6 @@
           <line>28</line>
           <option name="timeStamp" value="409" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/AE_GAN_TF.py</url>
-          <line>644</line>
-          <option name="timeStamp" value="410" />
-        </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
@@ -1031,7 +1033,7 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="411" />
+      <option name="time" value="414" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -2114,8 +2116,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/VAE_GAN_BAK">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="105">
-          <caret line="150" column="38" selection-start-line="150" selection-start-column="38" selection-end-line="150" selection-end-column="38" />
+        <state relative-caret-position="480">
+          <caret line="211" column="80" selection-start-line="211" selection-start-column="13" selection-end-line="211" selection-end-column="80" />
           <folding />
         </state>
       </provider>
@@ -2132,8 +2134,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/AE_GAN_TF.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="540">
-          <caret line="640" column="0" selection-start-line="640" selection-start-column="0" selection-end-line="640" selection-end-column="0" />
+        <state relative-caret-position="362">
+          <caret line="662" column="38" selection-start-line="662" selection-start-column="38" selection-end-line="662" selection-end-column="38" />
           <folding>
             <element signature="e#456#479#0" expanded="true" />
             <element signature="e#728#1358#0" expanded="false" />
@@ -2172,15 +2174,15 @@
             <element signature="e#20679#21316#0" expanded="false" />
             <element signature="e#21378#21715#0" expanded="false" />
             <element signature="e#21777#22134#0" expanded="false" />
-            <element signature="e#23220#23807#0" expanded="false" />
-            <marker date="1494389135194" expanded="false" signature="6298:6648" ph="..." />
-            <marker date="1494389135194" expanded="false" signature="6395:6456" ph="..." />
-            <marker date="1494389135194" expanded="false" signature="6496:6564" ph="..." />
-            <marker date="1494389135194" expanded="false" signature="6693:6835" ph="..." />
-            <marker date="1494389135194" expanded="false" signature="10126:10787" ph="..." />
-            <marker date="1494389135194" expanded="false" signature="11653:11842" ph="..." />
-            <marker date="1494389135194" expanded="false" signature="12413:12510" ph="..." />
-            <marker date="1494389135194" expanded="false" signature="16606:16681" ph="..." />
+            <element signature="e#22269#23100#0" expanded="false" />
+            <marker date="1494394419700" expanded="false" signature="6298:6648" ph="..." />
+            <marker date="1494394419700" expanded="false" signature="6395:6456" ph="..." />
+            <marker date="1494394419700" expanded="false" signature="6496:6564" ph="..." />
+            <marker date="1494394419700" expanded="false" signature="6693:6835" ph="..." />
+            <marker date="1494394419700" expanded="false" signature="10126:10787" ph="..." />
+            <marker date="1494394419700" expanded="false" signature="11653:11842" ph="..." />
+            <marker date="1494394419700" expanded="false" signature="12413:12510" ph="..." />
+            <marker date="1494394419700" expanded="false" signature="16606:16681" ph="..." />
           </folding>
         </state>
       </provider>

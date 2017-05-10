@@ -636,30 +636,37 @@ class GAN4(object):
         # x_gen, self.G_var = self.GeneratorCNN(z, conv_hidden_num, channel,repeat_num, data_format, reuse=False)
         # d_out, self.D_z, self.D_var = self.DiscriminatorCNN(tf.concat([x_gen, x], 0), channel, z_num,
         #                                                     repeat_num,conv_hidden_num, data_format)
-        with tf.variable_scope("G") as vs_g:
-            x_gen = self.BEGAN_dec(self.z_input, hidden_num=128 ,act_func=self.act_func, input_channel=3, data_format='NCHW', repeat_num=4)
-        self.G_var = tf.contrib.framework.get_variables(vs_g)
-        with tf.variable_scope("D") as vs_d:
+        with tf.variable_scope("G_enc") as G_enc:
             x = norm_img(self.x_input)
-            z_d = self.BEGAN_enc(tf.concat([x_gen, x], 0), act_func=self.act_func, hidden_num = 128, z_num = 64, repeat_num = 4, data_format = 'NCHW', reuse = False)
+            z_g = self.BEGAN_enc(x, act_func=self.act_func, hidden_num = 128, z_num = 64, repeat_num = 4, data_format = 'NCHW', reuse = False)
+        self.G_enc_var = tf.contrib.framework.get_variables(G_enc)
+        with tf.variable_scope("G_dec") as G_dec:
+            g_out = self.BEGAN_dec(tf.concat([z_g,self.z_input],0), hidden_num=128 ,act_func=self.act_func, input_channel=3, data_format='NCHW', repeat_num=4)
+            x_recg, x_gen = tf.split(g_out, 2)
+        self.G_dec_var = tf.contrib.framework.get_variables(G_dec)
+        with tf.variable_scope("D_enc") as D_enc:
+            x = norm_img(self.x_input)
+            z_d = self.BEGAN_enc(tf.concat([x_recg, x_gen, x], 0), act_func=self.act_func, hidden_num = 128, z_num = 64, repeat_num = 4, data_format = 'NCHW', reuse = False)
+        self.D_enc_var = tf.contrib.framework.get_variables(D_enc)
+        with tf.variable_scope("D_dec") as D_dec:
             d_out = self.BEGAN_dec(z_d, hidden_num=128 ,act_func=self.act_func, input_channel=3, data_format='NCHW', repeat_num=4)
-            x_gen_rec, x_rec = tf.split(d_out, 2)
-        self.D_var = tf.contrib.framework.get_variables(vs_d)
+            x_rec_rec, x_gen_rec, x_rec = tf.split(d_out, 3)
+        self.D_dec_var  = tf.contrib.framework.get_variables(D_dec)
 
-        self.x_rec, self.x_gen, self.x_gen_rec = x_rec, x_gen, x_gen_rec
+        self.x_rec, self.x_gen, self.x_gen_rec, self.x_rec_rec = x_rec, x_gen, x_gen_rec, x_rec_rec
         g_optimizer, d_optimizer = tf.train.AdamOptimizer(self.g_lr), tf.train.AdamOptimizer(self.d_lr)
 
         self.d_loss_real = tf.reduce_mean(tf.abs(x_rec - x))
-        self.d_loss_fake = tf.reduce_mean(tf.abs(x_gen_rec - x_gen))
+        self.d_loss_fake = tf.reduce_mean(tf.abs(x_gen_rec - x_gen)) + tf.reduce_mean(tf.abs(x_rec_rec - x_rec)) # change into difference in activation
 
         self.d_loss = self.d_loss_real - self.k_t * self.d_loss_fake
-        self.g_loss = tf.reduce_mean(tf.abs(x_gen_rec - x_gen))
+        self.g_loss = self.d_loss_fake
         self.balance = self.gamma * self.d_loss_real - self.g_loss
         self.measure = self.d_loss_real + tf.abs(self.balance)
 
         self.step = tf.Variable(0, name='step', trainable=False)
-        d_optim = d_optimizer.minimize(self.d_loss, var_list=self.D_var)
-        g_optim = g_optimizer.minimize(self.g_loss, global_step=self.step, var_list=self.G_var)
+        d_optim = d_optimizer.minimize(self.d_loss, var_list=self.D_dec_var+self.D_enc_var)
+        g_optim = g_optimizer.minimize(self.g_loss, global_step=self.step, var_list=self.G_dec_var+self.G_enc_var)
         with tf.control_dependencies([d_optim, g_optim]):
             self.k_update = tf.assign(
                 self.k_t, tf.clip_by_value(self.k_t + self.lambda_k * self.balance, 0, 1))
