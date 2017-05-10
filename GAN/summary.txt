@@ -29,4 +29,3 @@
 
 22. GAN_2017_05_10_09_19_02 in doi2 views G_gen and G_rec equally in GAN loss. Rec loss is trained on both enc and dec. Gen_loss is trained on dec.
 23. GAN_2017_05_10_10_06_18 in doi5 put a weight 0.3 on G_rec in GAN loss. Rec loss is trained on both enc and dec. GAN loss is used to train dnc.
-24. GAN_2017_05_10_13_19_04 in doi2 seems to work very well!

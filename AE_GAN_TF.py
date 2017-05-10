@@ -125,285 +125,6 @@ def upscale(x, scale, data_format):
     _, h, w, _ = get_conv_shape(x, data_format)
     return resize_nearest_neighbor(x, (h*scale, w*scale), data_format)
 
-class VAE(object):
-    def __init__(self, cfg):
-        self.log_vars = []
-        self.cfg = cfg
-        # Network Parameter Setting
-        self.variational = cfg['vae']
-        self.act_func = self.activation(cfg)
-        self.latent_dim = cfg['latent_dim']
-        self.n_filter = cfg['n_filters']
-        self.filter_size = cfg['filter_size']
-        self.img_size = cfg['input_dim'][0]
-        self.n_ch_in = cfg['n_channels']
-        self.n_attributes = cfg['n_attributes']
-        self.datadir = cfg['datadir']
-        self.encoder_module = self.VGG_enc_block
-        self.decoder_module = self.VGG_dec_block
-        self.n_blocks = cfg['n_blocks']
-
-        # Optimizer Parameter Setting
-        self.batch_size = cfg['batch_size']
-        self.epochs = cfg['max_epochs']
-        self.optimizer = cfg['vae_optimizer']
-        self.vae_lr = cfg['vae_lr']
-        self.snapshot_interval = cfg['snapshot_interval']
-
-        if self.variational:
-            self.network_type = 'VAE'
-        else:
-            self.network_type = 'AE'
-        self.logdir,self.modeldir = self.creat_dir(self.network_type)
-        save_config(cfg, self.logdir)
-
-        # define VAE network
-        self.x_input = tf.placeholder(tf.float32, [self.batch_size, self.img_size, self.img_size, self.n_ch_in])
-        self.y_input = tf.placeholder(tf.float32, [self.batch_size, self.n_attributes])
-
-    def CelebA(self, datadir, num=200000):
-        '''load human face dataset'''
-        import h5py
-        from random import sample
-        import numpy as np
-        f = h5py.File(datadir+"/celeba.hdf5", "r")
-        data_key = f.keys()[0]
-        data = (np.asarray(f[data_key],dtype='float32') / 255. - 0.5 )*2 # normalized into (-1, 1)
-        # data = np.asarray(f[data_key],dtype='float32') / 255.
-        # data = data.transpose((0,2,3,1))
-        label_key = f.keys()[1]
-        label = np.asarray(f[label_key])
-
-        split = 0.1
-        l = len(data)  # length of data
-        n1 = int(split * l)  # split for testing
-        indices = sample(range(l), n1)
-
-        x_test = data[indices]
-        y_test = label[indices]
-        x_train = np.delete(data, indices, 0)
-        y_train = np.delete(label, indices, 0)
-
-        # return (x_train, y_train), (x_test, y_test)
-        return (x_train[0:num], y_train[0:num]), (x_test[0:1000], y_test[0:1000])
-
-    def activation(self, cfg):
-        '''define activation function of the convolution'''
-        if cfg['act_func'] == 'ELU':
-            alpha = 1.0,  # ELU
-            return tf.nn.elu
-        elif cfg['act_func'] == 'ReLu':
-            alpha = 0.3,  # LeakyReLu
-            return tf.nn.relu
-        else:
-            raise NameError('Not supported activation function type')
-
-    def sampling(self, z_mean, z_log_var ):
-        epsilon = tf.random_normal(shape=(self.batch_size, self.latent_dim), mean=0.)
-        return z_mean + tf.exp(z_log_var / 2) * epsilon
-
-    def compute_vae_loss(self, x_input, log_x_rec, variational):
-        # xent_loss = tf.reduce_mean(-x_input * tf.log(x_rec+ TINY) - (1 - x_input) * tf.log( 1 - x_rec+ TINY))
-        xent_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=x_input,logits=log_x_rec))
-        rec_er = tf.reduce_mean(tf.sqrt(tf.squared_difference(x_input, tf.nn.sigmoid(log_x_rec))))
-        self.log_vars.append(("xent_loss", tf.reduce_mean(xent_loss)))
-        self.log_vars.append(("vae_rec_er", tf.reduce_mean(rec_er)))
-        if variational:
-            kl_loss = - 0.5 * tf.reduce_mean(1 + self.z_log_var - tf.square(self.z_mean) - tf.exp(self.z_log_var))
-            self.log_vars.append(("mean_variance", tf.reduce_mean(self.z_log_var)))
-            self.log_vars.append(("kl_loss", tf.reduce_mean(kl_loss)))
-        else:
-            kl_loss = 0
-        return xent_loss + kl_loss
-
-    def encoder(self, input, n_blocks):
-
-        with tf.variable_scope("encoder", reuse=True):
-            output = input
-            for block_i in range(n_blocks):
-                n_ch = self.n_filter * 2 ** block_i
-                output = self.encoder_module(output, n_ch)
-
-            # FC layers
-            h1 = slim.flatten(output)
-            if self.network_type == 'AE':
-                h2 = slim.fully_connected(h1, self.latent_dim, activation_fn=None)
-                output = h2
-            else:
-                h2 = slim.fully_connected(h1, 2 * self.latent_dim,
-                                          activation_fn=None)  # doubled for both mean and variance
-                self.z_mean, self.z_log_var = tf.split(h2, num_or_size_splits=2, axis=1)
-                output = self.sampling(self.z_mean, self.z_log_var)
-
-        return output
-
-    def decoder(self, h, n_blocks):
-
-        with tf.variable_scope("decoder", reuse=True):
-            iterm_size = self.img_size / 2 ** n_blocks
-            iterm_ch = self.n_filter * 2 ** (n_blocks - 1)
-            h3 = slim.fully_connected(h, iterm_size * iterm_size * iterm_ch, activation_fn=None)
-            h = tf.reshape(h3, [self.batch_size, iterm_size, iterm_size, iterm_ch])
-
-            output = h
-            for block_i in range(n_blocks,0,-1):
-                n_ch = self.n_filter*2**(block_i-1)
-                output = self.decoder_module(output, n_ch)
-            # initializer = tf.truncated_normal_initializer(stddev=0.01)
-            # regularizer = slim.l2_regularizer(0.0005)
-            output = slim.conv2d_transpose(output, self.n_ch_in, (3, 3), activation_fn=None, scope='this')#, padding='same'
-        return output
-
-    def Incep_enc_block(self, input, n_ch):
-        output1 = slim.conv2d(input, n_ch, 1, 2, activation_fn=self.act_func)
-
-        output2 = slim.conv2d(input, n_ch, 1, 1, activation_fn=self.act_func)
-        output2 = slim.conv2d(output2, n_ch, 3, 2, activation_fn=self.act_func) #scope='conv3_1'
-
-        # output3 = slim.conv2d(input, n_ch, 1, 1, activation_fn=self.act_func)
-        # output3 = slim.conv2d(output3, n_ch, 3, 1, activation_fn=self.act_func)
-        # output3 = slim.conv2d(output3, n_ch, 3, 2, activation_fn=self.act_func) #scope='conv3_1'
-
-        output = tf.concat(axis=3, values=[output1, output2])
-        return output
-
-    def Incep_dec_block(self, input, n_ch):
-        output1 = slim.conv2d_transpose(input, n_ch, 1, 2, activation_fn=self.act_func)
-
-        output2 = slim.conv2d_transpose(input, n_ch, 1, 1, activation_fn=self.act_func)
-        output2 = slim.conv2d_transpose(output2, n_ch, 3, 2, activation_fn=self.act_func) #scope='conv3_1'
-
-        # output3 = slim.conv2d_transpose(input, n_ch, 1, 1, activation_fn=self.act_func)
-        # output3 = slim.conv2d_transpose(output3, n_ch, 3, 1, activation_fn=self.act_func)
-        # output3 = slim.conv2d_transpose(output3, n_ch, 3, 2, activation_fn=self.act_func) #scope='conv3_1'
-
-        output = tf.concat(axis=3, values=[output1, output2])
-        return output
-
-    def VGG_enc_block(self, input, n_ch):
-        '''convolution module for encoder'''
-        initializer = tf.truncated_normal_initializer(stddev=0.01)
-        regularizer = slim.l2_regularizer(0.0005)
-        output = slim.conv2d(input, n_ch, 3, 1, activation_fn=self.act_func)
-        output = slim.conv2d(output, n_ch, 3, 2, activation_fn=self.act_func) #scope='conv3_1'
-        return output
-
-    def VGG_dec_block(self, input, n_ch):
-        '''convolution module for decoder'''
-        initializer = tf.truncated_normal_initializer(stddev=0.01)
-        regularizer = slim.l2_regularizer(0.0005)
-        output = slim.conv2d_transpose(input, n_ch, 3, 1, activation_fn=self.act_func)
-        output = slim.conv2d_transpose(output, n_ch, 3, 2, activation_fn=self.act_func) #scope='conv3_1'
-        return output
-
-    def def_vae_test(self, n_blocks, x_input):
-
-        # Encoder
-        output = self.encoder(x_input, n_blocks)
-        # Decoder
-        log_x_rec = self.decoder(output, n_blocks)
-
-        return log_x_rec, tf.nn.sigmoid(log_x_rec)
-
-    def def_vae(self, n_blocks, x_input):
-        '''build up model'''
-
-        # Encoder
-        output = self.encoder(x_input, n_blocks)
-        # Decoder
-        log_x_rec = self.decoder(output, n_blocks)
-
-        return log_x_rec, tf.nn.sigmoid(log_x_rec)
-
-    def train_vae(self, **kwargs):
-        '''model training'''
-
-        self.log_x_rec, self.x_rec = self.def_vae(self.n_blocks, self.x_input)
-        (self.X_train, self.y_train), (self.X_test, self.y_test) = self.CelebA(self.datadir)
-        epochs = self.epochs
-        for name, value in kwargs.items():
-            if name=='epochs':
-                epochs = value # overwrite in case of pretraining
-
-        with tf.Session() as sess:
-            if self.optimizer == 'adam':
-                vae_optimizer = tf.train.AdamOptimizer(self.vae_lr)
-            elif self.optimizer == 'adadelta':
-                vae_optimizer = tf.train.AdadeltaOptimizer(self.vae_lr)
-            elif self.optimizer == 'adagrad':
-                vae_optimizer = tf.train.AdagradOptimizer(self.vae_lr)
-            else:
-                raise Exception("[!] Caution! {} opimizer is not implemented in VAE training".format(self.optimizer))
-            self.vae_loss = self.compute_vae_loss(self.x_input, self.log_x_rec, self.variational)
-            vae_trainer = vae_optimizer.minimize(self.vae_loss)#, var_list=self.vae_var
-
-            init = tf.global_variables_initializer()
-            sess.run(init)
-            log_vars = [x for _, x in self.log_vars]
-            log_keys = [x for x, _ in self.log_vars]
-            for k, v in self.log_vars:
-                tf.summary.scalar(k, v)
-            summary_op = tf.summary.merge_all()
-            summary_writer = tf.summary.FileWriter(self.logdir, sess.graph)
-            saver = tf.train.Saver()
-
-            counter = 0
-            for epoch in tqdm(range(epochs)):
-                it_per_ep = len(self.X_train) / self.batch_size
-                all_log_vals = []
-                for i in range(it_per_ep):  # 1875 * 32 = 60000 -> # of training samples
-                    counter += 1
-                    x_train = self.X_train[i * self.batch_size:(i + 1) * self.batch_size]
-                    y_train = self.y_train[i * self.batch_size:(i + 1) * self.batch_size]
-                    feed_dict = {self.x_input: x_train, self.y_input: y_train}
-                    log_vals = sess.run([vae_trainer] + log_vars, feed_dict)[1:]
-                    all_log_vals.append(log_vals)
-
-                    if counter % self.snapshot_interval == 0:
-                        snapshot_name = "%s_%s" % ('experiment', str(counter))
-                        fn = saver.save(sess, "%s/%s.ckpt" % (self.modeldir, snapshot_name))
-                        print("Model saved in file: %s" % fn)
-
-                # output to terminal
-                avg_log_vals = np.mean(np.array(all_log_vals), axis=0)
-                log_line = "; ".join("%s: %s" % (str(k), str(v)) for k, v in zip(log_keys, avg_log_vals))
-                print("Epoch %d | " % (epoch) + log_line)
-                sys.stdout.flush()
-                if np.any(np.isnan(avg_log_vals)):
-                    raise ValueError("NaN detected!")
-                # output to tensorboard
-                x_train = self.X_train[i * self.batch_size:(i + 1) * self.batch_size]
-                y_train = self.y_train[i * self.batch_size:(i + 1) * self.batch_size]
-                feed_dict = {self.x_input: x_train, self.y_input: y_train}
-                summary_str = sess.run(summary_op, feed_dict)
-                summary_writer.add_summary(summary_str, counter)
-                # save reconstructed images
-                _, x_rec = self.def_vae(self.n_blocks, self.x_input)
-                _, x_rec_rec = self.def_vae(self.n_blocks, x_rec)
-                x_rec_img = sess.run(x_rec, feed_dict)
-                x_rec_rec_img = sess.run(x_rec_rec, feed_dict)
-                all_G_z = np.concatenate([255 * x_train[0:8], 255 * x_rec_img[0:8], 255 * x_rec_rec_img[0:8]])
-                save_image(all_G_z, '{}/epoch_{}_{}.png'.format(self.logdir, epoch, log_line))
-
-    def creat_dir(self,network_type):
-        """code from on InfoGAN"""
-        now = datetime.datetime.now(dateutil.tz.tzlocal())
-        timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
-        root_log_dir = "logs/" + network_type
-        exp_name = network_type + "_%s" % timestamp
-        log_dir = os.path.join(root_log_dir, exp_name)
-
-        now = datetime.datetime.now(dateutil.tz.tzlocal())
-        timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
-        root_model_dir = "models/" + network_type
-        exp_name = network_type + "_%s" % timestamp
-        model_dir = os.path.join(root_model_dir, exp_name)
-
-        for path in [log_dir, model_dir]:
-            if not os.path.exists(path):
-                os.makedirs(path)
-        return log_dir, model_dir
-
 def reshape(x, h, w, c, data_format):
     if data_format == 'NCHW':
         x = tf.reshape(x, [-1, c, h, w])
@@ -724,16 +445,16 @@ class GAN4(object):
             tf.summary.scalar("misc/g_lr", self.g_lr),
             tf.summary.scalar("misc/balance", self.balance),
         ])
-        summary_writer = tf.summary.FileWriter(self.logdir)
-        saver = tf.train.Saver()
+        self.summary_writer = tf.summary.FileWriter(self.logdir)
+        # saver = tf.train.Saver()
 
         self.step = tf.Variable(0, name='step', trainable=False)
         sv = tf.train.Supervisor(
                                 logdir=self.logdir,
                                 is_chief=True,
-                                saver=saver,
-                                summary_op=None,
-                                summary_writer=summary_writer,
+                                # saver=saver,
+                                 summary_op=None,
+                                summary_writer=self.summary_writer,
                                 save_model_secs=300,
                                 global_step=self.step,
                                 ready_for_local_init_op=None)
@@ -756,15 +477,13 @@ class GAN4(object):
             y_input = np.zeros([self.batch_size, self.n_attributes])
             z_input = np.random.uniform(-1, 1, size=(self.batch_size, self.latent_dim)).astype('float32')
             feed_dict = {self.x_input: x_input.eval(session=sess), self.y_input: y_input, self.z_input:z_input}
-            fetch_dict = {
-                "k_update": self.k_update,
-                "k_t": self.k_t,
-                "measure": self.measure,
-                "d_loss": self.d_loss,
-                "g_loss": self.g_loss,
-            }
-            # summary_str = sess.run(summary_op, feed_dict)
-            # summary_writer.add_summary(summary_str, counter)
+            # fetch_dict = {
+            #     "k_update": self.k_update,
+            #     "k_t": self.k_t,
+            #     "measure": self.measure,
+            #     "d_loss": self.d_loss,
+            #     "g_loss": self.g_loss,
+            # }
             # result = sess.run(fetch_dict)
             # print(result['d_loss'], result['g_loss'], result['measure'], result['k_t'])
             result = sess.run([self.d_loss,self.g_loss,self.measure,self.k_update,self.k_t],feed_dict)
@@ -774,7 +493,12 @@ class GAN4(object):
                 sess.run([self.g_lr_update, self.d_lr_update])
 
             if counter % self.snapshot_interval == 0:
-                x_train, x_rec_img, x_gen_img, x_gen_rec_img, x_rec_rec_img =\
+                result = sess.run(self.summary_op, feed_dict)
+                self.summary_writer.add_summary(result, i)
+                self.summary_writer.flush()
+
+            if counter % (10*self.snapshot_interval) == 0:
+                x_train, x_rec_img, x_rec_rec_img, x_gen_img, x_gen_rec_img =\
                     sess.run([self.x_input, self.x_rec, self.x_rec_rec, self.x_gen,self.x_gen_rec], feed_dict_fix)
                 nrow = 12
                 all_G_z = np.concatenate([x_train[0:nrow].transpose((0,2,3,1)),
@@ -799,8 +523,8 @@ if __name__ == "__main__":
            'latent_dim': 64,
            'vae_optimizer': 'adadelta',
            'vae_lr': 8e-1,
-           'g_lr': 0.00008,
-           'd_lr': 0.00008,
+           'g_lr': 0.0008,
+           'd_lr': 0.0008,
            'g_optimizer': 'adam',
            'd_optimizer': 'adam',
            'gamma': 0.5,
@@ -810,8 +534,8 @@ if __name__ == "__main__":
            'vae': False,
            'datadir': '/home/hope-yao/Documents/Data',
            'pre_train': 0, # how many steps to pretrain the VAE
-           'snapshot_interval': 500,
-           'lr_update_step': [50,100000,150000,200000],
+           'snapshot_interval': 50,
+           'lr_update_step': [1000,5000,20000,100000,150000,200000],
            }
 
     # vae = VAE(cfg)
