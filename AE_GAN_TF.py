@@ -68,7 +68,7 @@ def make_grid(tensor, nrow=8, padding=2,
             k = k + 1
     return grid
 
-def save_image(tensor, filename, nrow=8, padding=2,
+def save_image(tensor, filename, nrow=16, padding=2,
                normalize=False, scale_each=False):
     """code from on BEGAN"""
     ndarr = make_grid(tensor, nrow=nrow, padding=padding,
@@ -561,7 +561,6 @@ class GAN4(object):
         return out
 
     def __init__(self,cfg):
-        self.log_vars = []
 
         self.variational = cfg['vae']
 
@@ -578,8 +577,8 @@ class GAN4(object):
 
         # Network parameters for GAN
         self.epochs = cfg['max_epochs']
-        self.d_lr = cfg['d_lr']
-        self.g_lr = cfg['g_lr']
+        self.d_lr = tf.Variable(cfg['d_lr'], name='d_lr')
+        self.g_lr = tf.Variable(cfg['g_lr'], name='g_lr')
         self.g_optimizer = tf.train.AdamOptimizer(self.g_lr)
         if cfg['d_optimizer'] == 'adam':
             self.d_optimizer = tf.train.AdamOptimizer(self.d_lr)
@@ -604,7 +603,7 @@ class GAN4(object):
         self.img_size = cfg['input_dim'][0]
         self.n_ch_in = cfg['n_channels']
         self.n_attributes = cfg['n_attributes']
-        # self.datadir = cfg['datadir']
+        self.datadir = cfg['datadir']
         # self.encoder_module = self.VGG_enc_block
         # self.decoder_module = self.VGG_dec_block
         self.n_blocks = cfg['n_blocks']
@@ -614,7 +613,55 @@ class GAN4(object):
         self.optimizer = cfg['vae_optimizer']
         self.vae_lr = cfg['vae_lr']
         self.snapshot_interval = cfg['snapshot_interval']
+        self.lr_update_step = cfg['lr_update_step']
 
+        self.x_input = tf.placeholder(tf.float32, [self.batch_size, self.n_ch_in, self.img_size, self.img_size])
+        self.y_input = tf.placeholder(tf.float32, [self.batch_size, self.n_attributes])
+        self.z_input = tf.placeholder(tf.float32, [self.batch_size, self.latent_dim],name='z_input')
+        # from data_loader import get_loader
+        # data_path = '/home/hope-yao/Documents/Data/img_align_celeba'
+        # batch_size = 16
+        # input_scale_size = 64
+        # data_format = 'NCHW'
+        # split = 'train'
+        # self.data_loader = get_loader(
+        #     data_path, batch_size, input_scale_size,
+        #     data_format, split)
+        # self.x_input = self.data_loader
+        # self.y_input = tf.zeros([self.batch_size, self.n_attributes])
+        # self.z_input = tf.random_uniform(
+        #     (self.batch_size, self.latent_dim), minval=-1.0, maxval=1.0)
+
+    def CelebA(self, datadir, num=200000):
+        '''load human face dataset'''
+        import h5py
+        from random import sample
+        import numpy as np
+        f = h5py.File(datadir+"/celeba.hdf5", "r")
+        data_key = f.keys()[0]
+        data = (np.asarray(f[data_key],dtype='float32') / 255. - 0.5 )*2 # normalized into (-1, 1)
+        # data = np.asarray(f[data_key],dtype='float32') / 255.
+        # data = data.transpose((0,2,3,1))
+        label_key = f.keys()[1]
+        label = np.asarray(f[label_key])
+
+        split = 0.1
+        l = len(data)  # length of data
+        n1 = int(split * l)  # split for testing
+        indices = sample(range(l), n1)
+
+        x_test = data[indices]
+        y_test = label[indices]
+        x_train = np.delete(data, indices, 0)
+        y_train = np.delete(label, indices, 0)
+
+        # return (x_train, y_train), (x_test, y_test)
+        return (x_train[0:num], y_train[0:num]), (x_test[0:1000], y_test[0:1000])
+
+    def train_gan(self, **kwargs):
+        '''model training'''
+
+        # (self.X_train, self.y_train), (self.X_test, self.y_test) = self.CelebA(self.datadir)
         from data_loader import get_loader
         data_path = '/home/hope-yao/Documents/Data/img_align_celeba'
         batch_size = 16
@@ -624,18 +671,7 @@ class GAN4(object):
         self.data_loader = get_loader(
             data_path, batch_size, input_scale_size,
             data_format, split)
-        self.x_input = self.data_loader
-        self.y_input = tf.zeros([self.batch_size, self.n_attributes])
-        self.z_input = tf.random_uniform(
-            (self.batch_size, self.latent_dim), minval=-1.0, maxval=1.0)
 
-    def train_gan(self, **kwargs):
-        '''model training'''
-
-        # (self.X_train, self.y_train), (self.X_test, self.y_test) = self.vae_g.CelebA(self.vae_g.datadir)
-        # x_gen, self.G_var = self.GeneratorCNN(z, conv_hidden_num, channel,repeat_num, data_format, reuse=False)
-        # d_out, self.D_z, self.D_var = self.DiscriminatorCNN(tf.concat([x_gen, x], 0), channel, z_num,
-        #                                                     repeat_num,conv_hidden_num, data_format)
         with tf.variable_scope("G_enc") as G_enc:
             x = norm_img(self.x_input)
             z_g = self.BEGAN_enc(x, act_func=self.act_func, hidden_num = 128, z_num = 64, repeat_num = 4, data_format = 'NCHW', reuse = False)
@@ -672,8 +708,10 @@ class GAN4(object):
         with tf.control_dependencies([d_optim, dec_optim, g_optim]):
             self.k_update = tf.assign(
                 self.k_t, tf.clip_by_value(self.k_t + self.lambda_k * self.balance, 0, 1))
-        for k, v in self.log_vars:
-            tf.summary.scalar(k, v)
+
+        self.g_lr_update = tf.assign(self.g_lr, self.g_lr * 0.7, name='g_lr_update')
+        self.d_lr_update = tf.assign(self.d_lr, self.d_lr * 0.7, name='d_lr_update')
+
         self.summary_op = tf.summary.merge([
             tf.summary.scalar("loss/d_loss", self.d_loss),
             tf.summary.scalar("loss/d_loss_real", self.d_loss_real),
@@ -706,35 +744,45 @@ class GAN4(object):
                                     gpu_options=gpu_options)
         sess = sv.prepare_or_wait_for_session(config=sess_config)
 
+        x_fixed = self.data_loader.eval(session=sess)
+        y_fixed = np.zeros([self.batch_size, self.n_attributes])
+        z_fixed = np.random.uniform(-1, 1, size=(self.batch_size, self.latent_dim))
+        feed_dict_fix = {self.x_input: x_fixed, self.y_input: y_fixed, self.z_input: z_fixed}
+
         counter = 0
         for i in tqdm(range(self.epochs)):  # 1875 * 32 = 60000 -> # of training samples
             counter += 1
+            x_input = self.data_loader
+            y_input = np.zeros([self.batch_size, self.n_attributes])
+            z_input = np.random.uniform(-1, 1, size=(self.batch_size, self.latent_dim)).astype('float32')
+            feed_dict = {self.x_input: x_input.eval(session=sess), self.y_input: y_input, self.z_input:z_input}
             fetch_dict = {
                 "k_update": self.k_update,
                 "k_t": self.k_t,
                 "measure": self.measure,
-                "z": self.z_input,
-                "x": self.x_input,
-                "x_rec": self.x_rec,
-                "x_rec_rec": self.x_rec_rec,
-                "x_gen": self.x_gen,
-                "x_gen_rec": self.x_gen_rec,
                 "d_loss": self.d_loss,
                 "g_loss": self.g_loss,
             }
             # summary_str = sess.run(summary_op, feed_dict)
             # summary_writer.add_summary(summary_str, counter)
-            result = sess.run(fetch_dict)
-            print(result['d_loss'], result['g_loss'], result['measure'], result['k_t'])
+            # result = sess.run(fetch_dict)
+            # print(result['d_loss'], result['g_loss'], result['measure'], result['k_t'])
+            result = sess.run([self.d_loss,self.g_loss,self.measure,self.k_update,self.k_t],feed_dict)
+            print(result)
+
+            if i in self.lr_update_step:
+                sess.run([self.g_lr_update, self.d_lr_update])
 
             if counter % self.snapshot_interval == 0:
-                x_train, x_rec_img, x_gen_img, x_gen_rec_img, x_rec_rec_img = result['x'], result['x_rec'], result['x_gen'], result['x_gen_rec'], result['x_rec_rec']
-                all_G_z = np.concatenate([x_train[0:8].transpose((0,2,3,1)),
-                                          255 * (x_rec_img[0:8].transpose((0, 2, 3, 1)) + 1) / 2,
-                                          255 * (x_rec_rec_img[0:8].transpose((0, 2, 3, 1)) + 1) / 2,
-                                          255 * (x_gen_img[0:8].transpose((0,2,3,1)) + 1) / 2,
-                                          255 * (x_gen_rec_img[0:8].transpose((0,2,3,1)) + 1) / 2])
-                save_image(all_G_z, '{}/itr{}.png'.format(self.logdir, i))
+                x_train, x_rec_img, x_gen_img, x_gen_rec_img, x_rec_rec_img =\
+                    sess.run([self.x_input, self.x_rec, self.x_rec_rec, self.x_gen,self.x_gen_rec], feed_dict_fix)
+                nrow = 12
+                all_G_z = np.concatenate([x_train[0:nrow].transpose((0,2,3,1)),
+                                          255 * (x_rec_img[0:nrow].transpose((0, 2, 3, 1)) + 1) / 2,
+                                          255 * (x_rec_rec_img[0:nrow].transpose((0, 2, 3, 1)) + 1) / 2,
+                                          255 * (x_gen_img[0:nrow].transpose((0,2,3,1)) + 1) / 2,
+                                          255 * (x_gen_rec_img[0:nrow].transpose((0,2,3,1)) + 1) / 2])
+                save_image(all_G_z, '{}/itr{}.png'.format(self.logdir, i),nrow=nrow)
 
 
 if __name__ == "__main__":
@@ -763,6 +811,7 @@ if __name__ == "__main__":
            'datadir': '/home/hope-yao/Documents/Data',
            'pre_train': 0, # how many steps to pretrain the VAE
            'snapshot_interval': 500,
+           'lr_update_step': [50,100000,150000,200000],
            }
 
     # vae = VAE(cfg)
