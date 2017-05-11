@@ -835,7 +835,14 @@
       <option name="project" value="LOCAL" />
       <updated>1494544769093</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="Finished CGAN code, which is running on doi2 now.&#10;BEGAN framework with xyz input is under testing in doi5. It seems that there is nothing wrong.">
+      <created>1494545122084</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1494545122084</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -914,7 +921,8 @@
     <MESSAGE value="Added tensorboard monitor and more transition in lr" />
     <MESSAGE value="start working on CGAN, need to test BEGAN framework with xyz input again first." />
     <MESSAGE value="Finished CGAN code, going to run in doi5 with different parameters.&#10;BEGAN framework with xyz input is under testing in doi5. It seems that there is nothing wrong." />
-    <option name="LAST_COMMIT_MESSAGE" value="Finished CGAN code, going to run in doi5 with different parameters.&#10;BEGAN framework with xyz input is under testing in doi5. It seems that there is nothing wrong." />
+    <MESSAGE value="Finished CGAN code, which is running on doi2 now.&#10;BEGAN framework with xyz input is under testing in doi5. It seems that there is nothing wrong." />
+    <option name="LAST_COMMIT_MESSAGE" value="Finished CGAN code, which is running on doi2 now.&#10;BEGAN framework with xyz input is under testing in doi5. It seems that there is nothing wrong." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
