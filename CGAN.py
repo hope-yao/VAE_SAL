@@ -68,7 +68,7 @@ def make_grid(tensor, nrow=8, padding=2,
             k = k + 1
     return grid
 
-def save_image(tensor, filename, nrow=16, padding=2,
+def save_image(tensor, filename, nrow=8, padding=2,
                normalize=False, scale_each=False):
     """code from on BEGAN"""
     ndarr = make_grid(tensor, nrow=nrow, padding=padding,
@@ -143,6 +143,32 @@ class GAN4(object):
             return tf.nn.relu
         else:
             raise NameError('Not supported activation function type')
+
+    def CelebA(self, datadir, num=200000):
+        '''load human face dataset'''
+        import h5py
+        from random import sample
+        import numpy as np
+        f = h5py.File(datadir+"/celeba.hdf5", "r")
+        data_key = f.keys()[0]
+        data = (np.asarray(f[data_key],dtype='float32') / 255. - 0.5 )*2 # normalized into (-1, 1)
+        # data = np.asarray(f[data_key],dtype='float32') / 255.
+        # data = data.transpose((0,2,3,1))
+        label_key = f.keys()[1]
+        label = np.asarray(f[label_key])
+
+        split = 0.1
+        l = len(data)  # length of data
+        n1 = int(split * l)  # split for testing
+        indices = sample(range(l), n1)
+
+        x_test = data[indices]
+        y_test = label[indices]
+        x_train = np.delete(data, indices, 0)
+        y_train = np.delete(label, indices, 0)
+
+        # return (x_train, y_train), (x_test, y_test)
+        return (x_train[0:num], y_train[0:num]), (x_test[0:1000], y_test[0:1000])
 
     def sampling(self, z_mean, z_log_var ):
         epsilon = tf.random_normal(shape=(self.batch_size, self.latent_dim), mean=0.)
@@ -282,9 +308,10 @@ class GAN4(object):
         return out
 
     def __init__(self,cfg):
+        self.log_vars = []
 
         self.variational = cfg['vae']
-
+        self.datadir = cfg['datadir']
         self.gamma = tf.cast(cfg['gamma'], tf.float32)
         self.lambda_k = tf.cast(cfg['lambda_k'], tf.float32)
         self.k_t = tf.Variable(0., trainable=False, name='k_t')
@@ -298,8 +325,8 @@ class GAN4(object):
 
         # Network parameters for GAN
         self.epochs = cfg['max_epochs']
-        self.d_lr = tf.Variable(cfg['d_lr'], name='d_lr')
-        self.g_lr = tf.Variable(cfg['g_lr'], name='g_lr')
+        self.d_lr = cfg['d_lr']
+        self.g_lr = cfg['g_lr']
         self.g_optimizer = tf.train.AdamOptimizer(self.g_lr)
         if cfg['d_optimizer'] == 'adam':
             self.d_optimizer = tf.train.AdamOptimizer(self.d_lr)
@@ -324,7 +351,7 @@ class GAN4(object):
         self.img_size = cfg['input_dim'][0]
         self.n_ch_in = cfg['n_channels']
         self.n_attributes = cfg['n_attributes']
-        self.datadir = cfg['datadir']
+        # self.datadir = cfg['datadir']
         # self.encoder_module = self.VGG_enc_block
         # self.decoder_module = self.VGG_dec_block
         self.n_blocks = cfg['n_blocks']
@@ -334,55 +361,7 @@ class GAN4(object):
         self.optimizer = cfg['vae_optimizer']
         self.vae_lr = cfg['vae_lr']
         self.snapshot_interval = cfg['snapshot_interval']
-        self.lr_update_step = cfg['lr_update_step']
 
-        self.x_input = tf.placeholder(tf.float32, [self.batch_size, self.n_ch_in, self.img_size, self.img_size])
-        self.y_input = tf.placeholder(tf.float32, [self.batch_size, self.n_attributes])
-        self.z_input = tf.placeholder(tf.float32, [self.batch_size, self.latent_dim],name='z_input')
-        # from data_loader import get_loader
-        # data_path = '/home/hope-yao/Documents/Data/img_align_celeba'
-        # batch_size = 16
-        # input_scale_size = 64
-        # data_format = 'NCHW'
-        # split = 'train'
-        # self.data_loader = get_loader(
-        #     data_path, batch_size, input_scale_size,
-        #     data_format, split)
-        # self.x_input = self.data_loader
-        # self.y_input = tf.zeros([self.batch_size, self.n_attributes])
-        # self.z_input = tf.random_uniform(
-        #     (self.batch_size, self.latent_dim), minval=-1.0, maxval=1.0)
-
-    def CelebA(self, datadir, num=200000):
-        '''load human face dataset'''
-        import h5py
-        from random import sample
-        import numpy as np
-        f = h5py.File(datadir+"/celeba.hdf5", "r")
-        data_key = f.keys()[0]
-        data = (np.asarray(f[data_key],dtype='float32') / 255. - 0.5 )*2 # normalized into (-1, 1)
-        # data = np.asarray(f[data_key],dtype='float32') / 255.
-        # data = data.transpose((0,2,3,1))
-        label_key = f.keys()[1]
-        label = np.asarray(f[label_key])
-
-        split = 0.1
-        l = len(data)  # length of data
-        n1 = int(split * l)  # split for testing
-        indices = sample(range(l), n1)
-
-        x_test = data[indices]
-        y_test = label[indices]
-        x_train = np.delete(data, indices, 0)
-        y_train = np.delete(label, indices, 0)
-
-        # return (x_train, y_train), (x_test, y_test)
-        return (x_train[0:num], y_train[0:num]), (x_test[0:1000], y_test[0:1000])
-
-    def train_gan(self, **kwargs):
-        '''model training'''
-
-        # (self.X_train, self.y_train), (self.X_test, self.y_test) = self.CelebA(self.datadir)
         from data_loader import get_loader
         data_path = '/home/hope-yao/Documents/Data/img_align_celeba'
         batch_size = 16
@@ -392,65 +371,54 @@ class GAN4(object):
         self.data_loader = get_loader(
             data_path, batch_size, input_scale_size,
             data_format, split)
+        # self.x_input = self.data_loader
+        # self.y_input = tf.zeros([self.batch_size, self.n_attributes])
+        # self.z_input = tf.random_uniform(
+        #     (self.batch_size, self.latent_dim), minval=-1.0, maxval=1.0)
+        self.x_input = tf.placeholder(tf.float32, [self.batch_size, self.n_ch_in, self.img_size, self.img_size])
+        self.y_input = tf.placeholder(tf.float32, [self.batch_size, self.n_attributes])
+        self.z_input = tf.placeholder(tf.float32, [self.batch_size, self.latent_dim], name='z_input')
 
-        with tf.variable_scope("G_enc") as G_enc:
-            x = norm_img(self.x_input)
-            z_g_mix = self.BEGAN_enc(x, act_func=self.act_func, hidden_num = 128, z_num = self.latent_dim*2, repeat_num=self.n_blocks, data_format = 'NCHW', reuse = False)
-            self.z_mean, self.z_log_var = tf.split(tf.sigmoid(z_g_mix), 2, axis=1)
-            z_g = self.sampling(self.z_mean, self.z_log_var)
-        self.G_enc_var = tf.contrib.framework.get_variables(G_enc)
-        with tf.variable_scope("G_dec") as G_dec:
-            g_out = self.BEGAN_dec(tf.concat([z_g,self.z_input],0), hidden_num=128 ,act_func=self.act_func, input_channel=self.n_ch_in, data_format='NCHW', repeat_num=self.n_blocks)
-            x_recg, x_gen = tf.split(g_out, 2)
-        self.G_dec_var = tf.contrib.framework.get_variables(G_dec)
-        with tf.variable_scope("D_enc") as D_enc:
-            x = norm_img(self.x_input)
-            z_d = self.BEGAN_enc(tf.concat([x_recg, x_gen, x], 0), act_func=self.act_func, hidden_num = 128, z_num = self.latent_dim, repeat_num=self.n_blocks, data_format = 'NCHW', reuse = False)
-            dz_rec, dz_gen, dz_x = tf.split(tf.sigmoid(z_d), 3) # style error, added sigmoid on BEGAN architecture for value ~1
-        self.D_enc_var = tf.contrib.framework.get_variables(D_enc)
-        with tf.variable_scope("D_dec") as D_dec:
-            d_out = self.BEGAN_dec(z_d, hidden_num=128 ,act_func=self.act_func, input_channel=self.n_ch_in, data_format='NCHW', repeat_num=self.n_blocks)
-            x_rec_rec, x_gen_rec, x_rec = tf.split(d_out, 3)
-        self.D_dec_var  = tf.contrib.framework.get_variables(D_dec)
-        self.x_rec, self.x_gen, self.x_gen_rec, self.x_rec_rec = x_rec, x_gen, x_gen_rec, x_rec_rec
+    def train_gan(self, **kwargs):
+        '''model training'''
 
-        # BEGAN error
+        # (self.X_train, self.y_train), (self.X_test, self.y_test) = self.vae_g.CelebA(self.vae_g.datadir)
+        # x_gen, self.G_var = self.GeneratorCNN(z, conv_hidden_num, channel,repeat_num, data_format, reuse=False)
+        # d_out, self.D_z, self.D_var = self.DiscriminatorCNN(tf.concat([x_gen, x], 0), channel, z_num,
+        #                                                     repeat_num,conv_hidden_num, data_format)
+        with tf.variable_scope("G") as vs_g:
+            x_gen = self.BEGAN_dec(self.z_input, hidden_num=128 ,act_func=self.act_func, input_channel=3, data_format='NCHW', repeat_num=4)
+        self.G_var = tf.contrib.framework.get_variables(vs_g)
+        with tf.variable_scope("D") as vs_d:
+            x = norm_img(self.x_input)
+            z_d = self.BEGAN_enc(tf.concat([x_gen, x], 0), act_func=self.act_func, hidden_num = 128, z_num = 64, repeat_num = 4, data_format = 'NCHW', reuse = False)
+            d_out = self.BEGAN_dec(z_d, hidden_num=128 ,act_func=self.act_func, input_channel=3, data_format='NCHW', repeat_num=4)
+            x_gen_rec, x_rec = tf.split(d_out, 2)
+        self.D_var = tf.contrib.framework.get_variables(vs_d)
+
+        self.x_rec, self.x_gen, self.x_gen_rec = x_rec, x_gen, x_gen_rec
+        g_optimizer, d_optimizer = tf.train.AdamOptimizer(self.g_lr), tf.train.AdamOptimizer(self.d_lr)
+
         self.d_loss_real = tf.reduce_mean(tf.abs(x_rec - x))
-        self.d_loss_fake_gen = tf.reduce_mean(tf.abs(x_gen_rec - x_gen))
-        self.d_loss_fake_rec = tf.reduce_mean(tf.abs(x_rec_rec - x_rec))
+        self.d_loss_fake = tf.reduce_mean(tf.abs(x_gen_rec - x_gen))
 
-        self.alpha = 0.0 #percentage of recstruction error considered in eq.5 of VAE-GAN
-        self.g_loss = self.d_loss_fake_gen + self.alpha * self.d_loss_fake_rec
-        self.d_loss = self.d_loss_real - self.k_t * self.g_loss
+        self.d_loss = self.d_loss_real - self.k_t * self.d_loss_fake
+        self.g_loss = tf.reduce_mean(tf.abs(x_gen_rec - x_gen))
         self.balance = self.gamma * self.d_loss_real - self.g_loss
         self.measure = self.d_loss_real + tf.abs(self.balance)
 
-        # STYLE error
-        self.beta = 0.0 #gamma in eq.9 of VAE-GAN
-        # self.d_loss_fake_gen = tf.reduce_mean(tf.abs(dz_gen - dz_x))
-        self.style_loss = tf.reduce_mean(tf.abs(dz_rec - dz_x))
-        self.kl_loss = - 0.5 * tf.reduce_mean(1 + self.z_log_var - tf.square(self.z_mean) - tf.exp(self.z_log_var))
-
-        self.enc_loss = self.kl_loss + self.style_loss
-        self.dec_loss = self.beta * self.style_loss + self.g_loss
-
-        Genc_optimizer, Gdec_optimizer, d_optimizer = \
-            tf.train.AdamOptimizer(self.g_lr),tf.train.AdamOptimizer(self.g_lr), tf.train.AdamOptimizer(self.d_lr)
-        d_optim = d_optimizer.minimize(self.d_loss, var_list=self.D_dec_var+self.D_enc_var)
-        Gdec_optim = Gdec_optimizer.minimize(self.dec_loss, var_list=self.G_dec_var)
-        Genc_optim = Genc_optimizer.minimize(self.enc_loss, var_list=self.G_enc_var)
-        with tf.control_dependencies([ Gdec_optim, d_optim]):
+        self.step = tf.Variable(0, name='step', trainable=False)
+        d_optim = d_optimizer.minimize(self.d_loss, var_list=self.D_var)
+        g_optim = g_optimizer.minimize(self.g_loss, global_step=self.step, var_list=self.G_var)
+        with tf.control_dependencies([d_optim, g_optim]):
             self.k_update = tf.assign(
                 self.k_t, tf.clip_by_value(self.k_t + self.lambda_k * self.balance, 0, 1))
-
-        self.g_lr_update = tf.assign(self.g_lr, self.g_lr * 0.7, name='g_lr_update')
-        self.d_lr_update = tf.assign(self.d_lr, self.d_lr * 0.7, name='d_lr_update')
-
+        for k, v in self.log_vars:
+            tf.summary.scalar(k, v)
         self.summary_op = tf.summary.merge([
             tf.summary.scalar("loss/d_loss", self.d_loss),
             tf.summary.scalar("loss/d_loss_real", self.d_loss_real),
-            tf.summary.scalar("loss/d_loss_fake_rec", self.d_loss_fake_rec),
-            tf.summary.scalar("loss/d_loss_fake_gen", self.d_loss_fake_gen),
+            tf.summary.scalar("loss/d_loss_fake", self.d_loss_fake),
             tf.summary.scalar("loss/g_loss", self.g_loss),
             tf.summary.scalar("misc/measure", self.measure),
             tf.summary.scalar("misc/k_t", self.k_t),
@@ -458,16 +426,16 @@ class GAN4(object):
             tf.summary.scalar("misc/g_lr", self.g_lr),
             tf.summary.scalar("misc/balance", self.balance),
         ])
-        self.summary_writer = tf.summary.FileWriter(self.logdir)
-        # saver = tf.train.Saver()
+        summary_writer = tf.summary.FileWriter(self.logdir)
+        saver = tf.train.Saver()
 
         self.step = tf.Variable(0, name='step', trainable=False)
         sv = tf.train.Supervisor(
                                 logdir=self.logdir,
                                 is_chief=True,
-                                # saver=saver,
-                                 summary_op=None,
-                                summary_writer=self.summary_writer,
+                                saver=saver,
+                                summary_op=None,
+                                summary_writer=summary_writer,
                                 save_model_secs=300,
                                 global_step=self.step,
                                 ready_for_local_init_op=None)
@@ -477,7 +445,6 @@ class GAN4(object):
         sess_config = tf.ConfigProto(allow_soft_placement=True,
                                     gpu_options=gpu_options)
         sess = sv.prepare_or_wait_for_session(config=sess_config)
-
         x_fixed = self.data_loader.eval(session=sess)
         y_fixed = np.zeros([self.batch_size, self.n_attributes])
         z_fixed = np.random.uniform(-1, 1, size=(self.batch_size, self.latent_dim))
@@ -490,25 +457,8 @@ class GAN4(object):
             y_input = np.zeros([self.batch_size, self.n_attributes])
             z_input = np.random.uniform(-1, 1, size=(self.batch_size, self.latent_dim)).astype('float32')
             feed_dict = {self.x_input: x_input.eval(session=sess), self.y_input: y_input, self.z_input:z_input}
-            # fetch_dict = {
-            #     "k_update": self.k_update,
-            #     "k_t": self.k_t,
-            #     "measure": self.measure,
-            #     "d_loss": self.d_loss,
-            #     "g_loss": self.g_loss,
-            # }
-            # result = sess.run(fetch_dict)
-            # print(result['d_loss'], result['g_loss'], result['measure'], result['k_t'])
-            result = sess.run([self.d_loss,self.g_loss,self.measure,self.k_update,self.k_t, self.style_loss, self.kl_loss],feed_dict)
+            result = sess.run([self.d_loss,self.g_loss,self.measure,self.k_update,self.k_t],feed_dict)
             print(result)
-
-            if i in self.lr_update_step:
-                sess.run([self.g_lr_update, self.d_lr_update])
-
-            if counter % self.snapshot_interval == 0:
-                result = sess.run(self.summary_op, feed_dict)
-                self.summary_writer.add_summary(result, i)
-                self.summary_writer.flush()
 
             if counter % (10*self.snapshot_interval) == 0:
                 x_train, x_rec_img, x_rec_rec_img, x_gen_img, x_gen_rec_img =\
@@ -521,6 +471,26 @@ class GAN4(object):
                                           255 * (x_gen_rec_img[0:nrow].transpose((0,2,3,1)) + 1) / 2])
                 save_image(all_G_z, '{}/itr{}.png'.format(self.logdir, i),nrow=nrow)
 
+        # (self.X_train, self.y_train), (self.X_test, self.y_test) = self.CelebA(self.datadir)
+        # for epoch in range(self.epochs):
+        #     it_per_ep = len(self.X_train) / self.batch_size
+        #     for i in tqdm(range(it_per_ep)):
+        #         x_input = self.X_train[i * self.batch_size:(i + 1) * self.batch_size]
+        #         y_input = self.y_train[i * self.batch_size:(i + 1) * self.batch_size]
+        #         z_input = np.random.uniform(-1, 1, size=(self.batch_size, self.latent_dim)).astype('float32')
+        #         feed_dict = {self.x_input: x_input, self.y_input: y_input, self.z_input: z_input}
+        #         result = sess.run([self.d_loss, self.g_loss, self.measure, self.k_update, self.k_t], feed_dict)
+        #         print(result)
+        #         if counter % (10 * self.snapshot_interval) == 0:
+        #             x_train, x_rec_img, x_rec_rec_img, x_gen_img, x_gen_rec_img = \
+        #                 sess.run([self.x_input, self.x_rec, self.x_rec_rec, self.x_gen, self.x_gen_rec], feed_dict_fix)
+        #             nrow = 12
+        #             all_G_z = np.concatenate([x_train[0:nrow].transpose((0, 2, 3, 1)),
+        #                                       255 * (x_rec_img[0:nrow].transpose((0, 2, 3, 1)) + 1) / 2,
+        #                                       255 * (x_rec_rec_img[0:nrow].transpose((0, 2, 3, 1)) + 1) / 2,
+        #                                       255 * (x_gen_img[0:nrow].transpose((0, 2, 3, 1)) + 1) / 2,
+        #                                       255 * (x_gen_rec_img[0:nrow].transpose((0, 2, 3, 1)) + 1) / 2])
+        #             save_image(all_G_z, '{}/itr{}.png'.format(self.logdir, i), nrow=nrow)
 
 if __name__ == "__main__":
 
@@ -536,8 +506,8 @@ if __name__ == "__main__":
            'latent_dim': 64,
            'vae_optimizer': 'adadelta',
            'vae_lr': 8e-1,
-           'g_lr': 0.0008,
-           'd_lr': 0.0008,
+           'g_lr': 0.00008,
+           'd_lr': 0.00008,
            'g_optimizer': 'adam',
            'd_optimizer': 'adam',
            'gamma': 0.5,
@@ -547,8 +517,7 @@ if __name__ == "__main__":
            'vae': False,
            'datadir': '/home/hope-yao/Documents/Data',
            'pre_train': 0, # how many steps to pretrain the VAE
-           'snapshot_interval': 50,
-           'lr_update_step': [10000, 30000, 100000, 200000],
+           'snapshot_interval': 500,
            }
 
     # vae = VAE(cfg)
