@@ -458,14 +458,14 @@ if __name__ == "__main__":
            'd_optimizer': 'sgd',
            # 'learning_rate': lr_schedule,
            'vae': True,
-           'datadir': '/home/hope-yao/Documents/Data',
+           'datadir': '/home/doi5/Documents/Hope',
            'pre_train': True,
            'snapshot_interval': 5000,
            }
 
     vae = VAE(cfg)
     vae.train_vae()
-
+    #
     # gan = GAN(cfg)
     # gan.train_gan()
 
