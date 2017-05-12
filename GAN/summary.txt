@@ -29,3 +29,9 @@
 
 22. GAN_2017_05_10_09_19_02 in doi2 views G_gen and G_rec equally in GAN loss. Rec loss is trained on both enc and dec. Gen_loss is trained on dec.
 23. GAN_2017_05_10_10_06_18 in doi5 put a weight 0.3 on G_rec in GAN loss. Rec loss is trained on both enc and dec. GAN loss is used to train dnc.
+
+24. ALI sytle, fix rate of s_w to 0.5 will have gradient explosion for all s_
+    ALI style embedding will result in mode collapse
+    WGAN style embedding will result in gradient explosion of s_w
+    WGAN style embedding with with k_t clipped in (0.1,1) will still have gradient explosion
+    WGAN style embedding with with tanh output in AE won't have gradient explosion but has mode collapse again

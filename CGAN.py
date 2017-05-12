@@ -303,7 +303,7 @@ class GAN4(object):
             if idx < repeat_num - 1:
                 x = upscale(x, 2, data_format)
 
-        out = slim.conv2d(x, input_channel, 3, 1, activation_fn=None, data_format=data_format)
+        out = slim.conv2d(x, input_channel, 3, 1, activation_fn=tf.tanh, data_format=data_format)
 
         return out
 
@@ -399,6 +399,14 @@ class GAN4(object):
         with tf.variable_scope("D") as vs_d:
             self.x_real = norm_img(self.x_input)
             z_d = self.BEGAN_enc(tf.concat([self.x_real, self.x_gen], 0), act_func=self.act_func, hidden_num = 128, z_num = 64, repeat_num = 4, data_format = 'NCHW', reuse = False)
+            # Pull away term in EBGAN, cosine distance
+            z_d_real, z_d_gen = tf.split(z_d,2)
+
+            nom = tf.matmul(z_d_gen, tf.transpose(z_d_gen, perm=[1, 0]))
+            denom = tf.sqrt(tf.reduce_sum(tf.square(z_d_gen), reduction_indices=[1], keep_dims=True))
+            pt = tf.square(tf.transpose((nom / denom), (1, 0)) / denom)
+            pt = pt - tf.diag(tf.diag_part(pt))
+            self.pulling_term = tf.reduce_sum(pt) / (self.batch_size * (self.batch_size - 1))
 
             # # CONDITION IN ALI STYLE, WHICH HAS MODE COLLPASE
             # z_real, z_fake = tf.split(z_d, 2)
@@ -418,7 +426,7 @@ class GAN4(object):
         self.loss_sr = tf.reduce_mean(tf.abs(x_sr - self.x_real))
         self.loss_sw = tf.reduce_mean(tf.abs(x_sw - self.x_real))
         self.loss_sf = tf.reduce_mean(tf.abs(x_sf - self.x_gen))
-        self.g_loss = self.loss_sf
+        self.g_loss = self.loss_sf + 0.3*self.pulling_term
         d_loss = (self.loss_sr - self.loss_sw*self.k_t)
         self.d_loss = d_loss - self.k_t * self.g_loss
         self.balance = self.gamma * d_loss - self.g_loss
@@ -429,7 +437,7 @@ class GAN4(object):
         g_optim = g_optimizer.minimize(self.g_loss, var_list=self.G_var)
         with tf.control_dependencies([d_optim, g_optim]):
             self.k_update = tf.assign(
-                self.k_t, tf.clip_by_value(self.k_t + self.lambda_k * self.balance, 0.1, 1))
+                self.k_t, tf.clip_by_value(self.k_t + self.lambda_k * self.balance, 0.0, 1))
         for k, v in self.log_vars:
             tf.summary.scalar(k, v)
         self.summary_op = tf.summary.merge([
@@ -443,6 +451,7 @@ class GAN4(object):
             tf.summary.scalar("misc/d_lr", self.d_lr),
             tf.summary.scalar("misc/g_lr", self.g_lr),
             tf.summary.scalar("misc/balance", self.balance),
+            tf.summary.scalar("misc/balance", self.pulling_term),
         ])
         self.summary_writer = tf.summary.FileWriter(self.logdir)
         saver = tf.train.Saver()
@@ -476,7 +485,7 @@ class GAN4(object):
                 y_input = self.y_train[i * self.batch_size:(i + 1) * self.batch_size]
                 z_input = np.random.uniform(-1, 1, size=(self.batch_size, self.latent_dim)).astype('float32')
                 feed_dict = {self.x_input: x_input, self.y_input: y_input, self.z_input: z_input}
-                result = sess.run([self.loss_sr, self.loss_sw, self.loss_sf, self.d_loss, self.g_loss, self.measure, self.k_update, self.k_t], feed_dict)
+                result = sess.run([self.loss_sr, self.loss_sw, self.loss_sf, self.d_loss, self.g_loss, self.measure, self.k_update, self.k_t, self.pulling_term], feed_dict)
                 print(result)
                 if counter % self.snapshot_interval == 0:
                     summary = sess.run(self.summary_op,feed_dict)
