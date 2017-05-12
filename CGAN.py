@@ -403,7 +403,7 @@ class GAN4(object):
         self.x_sr, self.x_sw, self.x_sf = x_sr, x_sw, x_sf
 
         self.loss_sr = tf.reduce_mean(tf.abs(x_sr - self.x_real))
-        self.loss_sw = tf.reduce_mean(tf.abs(x_sw - self.x_gen))
+        self.loss_sw = tf.reduce_mean(tf.abs(x_sw - self.x_real))
         self.loss_sf = tf.reduce_mean(tf.abs(x_sf - self.x_gen))
         self.g_loss = self.loss_sf
         d_loss = (self.loss_sr - self.loss_sw*self.k_t)

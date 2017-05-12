@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9095eff0-9b9a-48b8-8d3a-556039fdab1d" name="Default" comment="Finished CGAN code, which is running on doi2 now.&#10;BEGAN framework with xyz input is under testing in doi5. It seems that there is nothing wrong.">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/test file.py" />
+    <list default="true" id="9095eff0-9b9a-48b8-8d3a-556039fdab1d" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CGAN.py" afterPath="$PROJECT_DIR$/CGAN.py" />
     </list>
@@ -68,8 +67,8 @@
           <file leaf-file-name="CGAN.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/CGAN.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="8">
-                  <caret line="463" column="21" selection-start-line="463" selection-start-column="21" selection-end-line="463" selection-end-column="21" />
+                <state relative-caret-position="94">
+                  <caret line="446" column="22" selection-start-line="446" selection-start-column="22" selection-end-line="446" selection-end-column="22" />
                   <folding>
                     <element signature="n#!!doc" expanded="false" />
                     <element signature="e#728#1358#0" expanded="false" />
@@ -117,8 +116,8 @@
                     <element signature="e#13240#13343#0" expanded="false" />
                     <element signature="e#13738#13769#0" expanded="false" />
                     <element signature="e#13920#13940#0" expanded="false" />
-                    <element signature="e#17792#17909#0" expanded="false" />
-                    <element signature="e#22653#22669#0" expanded="false" />
+                    <element signature="e#17793#17910#0" expanded="false" />
+                    <element signature="e#22654#22670#0" expanded="false" />
                   </folding>
                 </state>
               </provider>
@@ -849,7 +848,14 @@
       <option name="project" value="LOCAL" />
       <updated>1494545196179</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="Finished CGAN code, which is running on doi2 now.&#10;BEGAN framework with xyz input is under testing in doi5. It seems that there is nothing wrong.">
+      <created>1494545313575</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1494545313575</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -859,11 +865,11 @@
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.09627157" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="LuaJ" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.45386267" sideWeight="0.38786867" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.35944206" sideWeight="0.25709516" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32832617" sideWeight="0.49582636" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.45386267" sideWeight="0.61213136" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.45386267" sideWeight="0.61213136" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32939914" sideWeight="0.4980523" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.35944206" sideWeight="0.7462437" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.35944206" sideWeight="0.74290484" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -2374,8 +2380,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/CGAN.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="8">
-          <caret line="463" column="21" selection-start-line="463" selection-start-column="21" selection-end-line="463" selection-end-column="21" />
+        <state relative-caret-position="94">
+          <caret line="446" column="22" selection-start-line="446" selection-start-column="22" selection-end-line="446" selection-end-column="22" />
           <folding>
             <element signature="n#!!doc" expanded="false" />
             <element signature="e#728#1358#0" expanded="false" />
@@ -2423,8 +2429,8 @@
             <element signature="e#13240#13343#0" expanded="false" />
             <element signature="e#13738#13769#0" expanded="false" />
             <element signature="e#13920#13940#0" expanded="false" />
-            <element signature="e#17792#17909#0" expanded="false" />
-            <element signature="e#22653#22669#0" expanded="false" />
+            <element signature="e#17793#17910#0" expanded="false" />
+            <element signature="e#22654#22670#0" expanded="false" />
           </folding>
         </state>
       </provider>
