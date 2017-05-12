@@ -54,7 +54,7 @@ def test_vae(vae, fn):
     vae.vae_model.load_weights(fn)
     (_, _), (x_test, y_test) = vae.CelebA(vae.datadir)
     x_rec = vae.vae_model.predict(x_test)
-    save_image( x_test, x_rec)
+    plt_rec( x_test, x_rec)
 
 def plt_rec(x_test, x_rec):
             import matplotlib.pyplot as plt
@@ -293,6 +293,7 @@ class VAE(object):
                       validation_data=(self.X_test, self.X_test),
                       callbacks = [])
         # self.vae_model.fit_generator(self.myGenerator(),steps_per_epoch=1000)
+        self.vae_model.save('vae_keras.h5')
         return self.vae_model
 
     def creat_dir(self,network_type):
@@ -432,7 +433,7 @@ if __name__ == "__main__":
 
     vae = VAE(cfg)
     # vae.train_vae()
-    test_vae(vae,'./result/AE.99-0.501.hdf5')
+    test_vae(vae,'vae_keras.h5')
 
     # gan = GAN(cfg)
     # gan.train_gan()

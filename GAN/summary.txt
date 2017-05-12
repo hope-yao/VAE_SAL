@@ -13,3 +13,19 @@
 
 12. even larger lr as 0.5 is also fine for AE with 3 conv blocks and FC..
 13. Keras VAE reconstruction result is much much better than the TF result
+
+14. GAN with VAE with FC is converging asymptotically, however, the reconstruction is not very good due to original AE_FC
+15. X_rec error in tensorboard and print is not the same. Base on the reconstructed image, there might be something wring in the tensorboard value.
+
+16. A vanilla inception is converging super slow even for 2 blocked AE using DEFAULT LR. However, it can obtain better result than AE with 1/2/3 conventional VGG style blocks in the begining. But later on ~= 1 VGG block
+17. Similar to VGG block, 3 Incep block is still worse than 2 Incep block
+
+18. the value of k_t is important to training. Unconverging if set it to 1, converging well if set to 0.01
+
+19. All generating cases have mode collapse so far. Only plausible generation is using parameter settings in GAN_2017_05_08_14_08_16. No k_t clip and x_input normalization here.
+20. GAN_2017_05_08_15_15_09 tend to have balanced D and G loss
+
+21. It is said in the repo issue that FC layer perfers no activation. This helps to solve mode collapse.
+
+22. GAN_2017_05_10_09_19_02 in doi2 views G_gen and G_rec equally in GAN loss. Rec loss is trained on both enc and dec. Gen_loss is trained on dec.
+23. GAN_2017_05_10_10_06_18 in doi5 put a weight 0.3 on G_rec in GAN loss. Rec loss is trained on both enc and dec. GAN loss is used to train dnc.

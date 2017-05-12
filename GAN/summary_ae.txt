@@ -1,13 +1,16 @@
-AE_2017_04_28_14_42_10		default lr, 1 conv block, no fc, squared rec_er
-AE_2017_04_28_15_12_33		lr=1e-1, 1 conv block, no fc
-AE_2017_04_28_15_24_25		lr=1e-1, 1 conv block, fc added
-AE_2017_04_28_15_56_42		lr=1e-1, 2 conv block, no fc
-AE_2017_04_28_16_05_26		lr=1e-1, 3 conv block, no fc
-AE_2017_04_28_15_24_25		lr=1e-1, 2 conv block, fc added, ELU in FC
-AE_2017_04_28_16_23_49		lr=1e-1, 3 conv block, fc added, ELU in FC
-AE_2017_04_28_16_32_56		lr=5e-1, 3 conv block, fc added, ELU in FC
-VAE_2017_04_28_16_52_52		lr=8e-1, 3 conv block, fc added, ELU in FC
-
-
-
-
+AE_2017_04_28_14_42_10		default lr, 1 VGG block, no fc, squared rec_er
+AE_2017_04_28_15_12_33		lr=1e-1, 1 VGG block, no fc
+AE_2017_04_28_15_24_25		lr=1e-1, 1 VGG block, fc added
+AE_2017_04_28_15_56_42		lr=1e-1, 2 VGG block, no fc
+AE_2017_04_28_16_05_26		lr=1e-1, 3 VGG block, no fc
+AE_2017_04_28_15_24_25		lr=1e-1, 2 VGG block, fc added, ELU in FC
+AE_2017_04_28_16_23_49		lr=1e-1, 3 VGG block, fc added, ELU in FC
+AE_2017_04_28_16_32_56		lr=5e-1, 3 VGG block, fc added, ELU in FC
+VAE_2017_04_28_16_52_52		lr=8e-1, 3 VGG block, fc added, ELU in FC
+AE_2017_04_28_22_59_55		lr=8e-1, 2 VGG block, 10X fc added, ELU in FC
+GAN_2017_04_28_21_52_11		prevae = 1, glr=1e-3, dlr=1e-4, 3 VGG block, 10X fc added, ELU in FC
+GAN_2017_04_28_23_34_30		prevae = 1, glr=5e-3, dlr=1e-4, 2 VGG block, 10X fc added, ELU in FC
+GAN_2017_04_29_07_29_08		prevae = 1, glr=5e-3, dlr=1e-4, 2 VGG block, no fc,
+AE_2017_04_29_10_14_53		lr=8e-1, 2 Incep block, no fc
+AE_2017_04_29_10_34_21		lr=8e-1, 3 Incep block, no fc
+AE_2017_05_01_16_04_19 		lr=8e-1, 3 Incep block, sigmoid fc
