@@ -381,22 +381,35 @@ class GAN4(object):
 
     def train_gan(self, **kwargs):
         '''model training'''
-        with tf.variable_scope("Embed") as vs_embed:
-            embed_out = slim.fully_connected(tf.concat([self.y_input,self.y_input_fake],0), self.latent_dim, activation_fn=tf.sigmoid)
-            y_embed_real, y_embed_fake = tf.split(embed_out, 2)
-            zy = tf.concat([tf.concat([self.z_input, y_embed_real],1),tf.concat([self.z_input, y_embed_fake],1)], 0)
+        with tf.variable_scope("G") as vs_g:
+            # # CONDITION IN ALI STYLE, WHICH HAS MODE COLLPASE
+            # embed_out = slim.fully_connected(tf.concat([self.y_input,self.y_input_fake],0), self.latent_dim, activation_fn=tf.sigmoid)
+            # y_embed_real, y_embed_fake = tf.split(embed_out, 2)
+            # zy = tf.concat([tf.concat([self.z_input, y_embed_real],1),tf.concat([self.z_input, y_embed_fake],1)], 0)
+            # h = slim.fully_connected(zy, self.latent_dim, activation_fn=tf.sigmoid)
+            # h_real, h_fake = tf.split(h, 2) # x_fake is generated using h_real
+            # CONDITION IN WGAN STYLE
+            z_embed = slim.fully_connected(self.z_input, self.latent_dim, activation_fn=tf.sigmoid)
+            zy = tf.concat([tf.concat([z_embed, self.y_input],1),tf.concat([z_embed, self.y_input_fake],1)], 0)
             h = slim.fully_connected(zy, self.latent_dim, activation_fn=tf.sigmoid)
             h_real, h_fake = tf.split(h, 2) # x_fake is generated using h_real
-        self.Embed_var = tf.contrib.framework.get_variables(vs_embed)
-        with tf.variable_scope("G") as vs_g:
+
             self.x_gen = self.BEGAN_dec(h_real, hidden_num=128 ,act_func=self.act_func, input_channel=3, data_format='NCHW', repeat_num=4)
         self.G_var = tf.contrib.framework.get_variables(vs_g)
         with tf.variable_scope("D") as vs_d:
             self.x_real = norm_img(self.x_input)
-            z_d = self.BEGAN_enc(tf.concat([self.x_gen, self.x_real], 0), act_func=self.act_func, hidden_num = 128, z_num = 64, repeat_num = 4, data_format = 'NCHW', reuse = False)
-            z_fake, z_real = tf.split(z_d, 2)
-            din_zy = tf.concat([tf.concat([z_real, y_embed_real],1),tf.concat([z_real, y_embed_fake],1),tf.concat([z_fake, y_embed_real],1)], 0)
-            din_zy = slim.fully_connected(din_zy, self.latent_dim, activation_fn=tf.sigmoid)
+            z_d = self.BEGAN_enc(tf.concat([self.x_real, self.x_gen], 0), act_func=self.act_func, hidden_num = 128, z_num = 64, repeat_num = 4, data_format = 'NCHW', reuse = False)
+
+            # # CONDITION IN ALI STYLE, WHICH HAS MODE COLLPASE
+            # z_real, z_fake = tf.split(z_d, 2)
+            # din_zy = tf.concat([tf.concat([z_real, y_embed_real],1),tf.concat([z_real, y_embed_fake],1),tf.concat([z_fake, y_embed_real],1)], 0)
+            # din_zy = slim.fully_connected(din_zy, self.latent_dim, activation_fn=tf.sigmoid)
+            # CONDITION IN WGAN STYLE
+            dz_embed = slim.fully_connected(z_d, self.latent_dim, activation_fn=tf.sigmoid)
+            dz_embed_real, dz_embed_fake = tf.split(dz_embed, 2)
+            zy = tf.concat([tf.concat([dz_embed_real, self.y_input],1),tf.concat([dz_embed_real, self.y_input_fake],1),tf.concat([dz_embed_fake, self.y_input],1)], 0)
+            din_zy = slim.fully_connected(zy, self.latent_dim, activation_fn=tf.sigmoid)
+
             d_out = self.BEGAN_dec(din_zy, hidden_num=128 ,act_func=self.act_func, input_channel=3, data_format='NCHW', repeat_num=4)
             x_sr, x_sw, x_sf = tf.split(d_out, 3)
         self.D_var = tf.contrib.framework.get_variables(vs_d)
@@ -412,11 +425,11 @@ class GAN4(object):
         self.measure = d_loss + tf.abs(self.balance)
 
         g_optimizer, d_optimizer = tf.train.AdamOptimizer(self.g_lr), tf.train.AdamOptimizer(self.d_lr)
-        d_optim = d_optimizer.minimize(self.d_loss, var_list=self.D_var+self.Embed_var)
-        g_optim = g_optimizer.minimize(self.g_loss, var_list=self.G_var+self.Embed_var)
+        d_optim = d_optimizer.minimize(self.d_loss, var_list=self.D_var)
+        g_optim = g_optimizer.minimize(self.g_loss, var_list=self.G_var)
         with tf.control_dependencies([d_optim, g_optim]):
             self.k_update = tf.assign(
-                self.k_t, tf.clip_by_value(self.k_t + self.lambda_k * self.balance, 0, 1))
+                self.k_t, tf.clip_by_value(self.k_t + self.lambda_k * self.balance, 0.1, 1))
         for k, v in self.log_vars:
             tf.summary.scalar(k, v)
         self.summary_op = tf.summary.merge([
