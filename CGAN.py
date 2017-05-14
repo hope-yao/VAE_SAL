@@ -426,9 +426,9 @@ class GAN4(object):
         self.loss_sr = tf.reduce_mean(tf.abs(x_sr - self.x_real))
         self.loss_sw = tf.reduce_mean(tf.abs(x_sw - self.x_real))
         self.loss_sf = tf.reduce_mean(tf.abs(x_sf - self.x_gen))
-        self.g_loss = self.loss_sf + self.pulling_term # consider logarithm perhaps
+        self.g_loss = self.loss_sf - tf.log(1-self.pulling_term) # consider logarithm perhaps
         margin = 1
-        d_loss1 = self.loss_sr + 0.5*tf.clip_by_value(margin - self.loss_sw,0.,1.)
+        d_loss1 = self.loss_sr + self.k_t*tf.clip_by_value(margin - self.loss_sw,0.,1.)
         self.d_loss = d_loss1 + self.k_t * tf.clip_by_value(margin - self.loss_sf, 0., 1.)
         self.balance = self.gamma * d_loss1 - self.g_loss
         self.measure = d_loss1 + tf.abs(self.balance)
@@ -521,7 +521,7 @@ if __name__ == "__main__":
            'd_lr': 0.00008,
            'g_optimizer': 'adam',
            'd_optimizer': 'adam',
-           'gamma': 0.4,
+           'gamma': 0.5,
            'lambda_k': 0.001,
            'k_t': 0.0,
            # 'learning_rate': lr_schedule,

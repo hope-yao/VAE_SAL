@@ -23,7 +23,7 @@
     <favorites_list name="3D VAE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.65270936">
+    <splitter split-orientation="horizontal" split-proportion="0.510468">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file leaf-file-name="AE_GAN_TF.py" pinned="false" current-in-tab="false">
@@ -68,8 +68,8 @@
           <file leaf-file-name="CGAN.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/CGAN.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="165">
-                  <caret line="402" column="47" selection-start-line="402" selection-start-column="47" selection-end-line="402" selection-end-column="47" />
+                <state relative-caret-position="31">
+                  <caret line="403" column="0" selection-start-line="403" selection-start-column="0" selection-end-line="403" selection-end-column="0" />
                   <folding>
                     <element signature="n#!!doc" expanded="false" />
                     <element signature="e#728#1358#0" expanded="false" />
@@ -117,7 +117,7 @@
                     <element signature="e#13240#13343#0" expanded="false" />
                     <element signature="e#13738#13769#0" expanded="false" />
                     <element signature="e#13920#13940#0" expanded="false" />
-                    <element signature="e#24231#24247#0" expanded="false" />
+                    <element signature="e#24246#24262#0" expanded="false" />
                   </folding>
                 </state>
               </provider>
@@ -162,8 +162,8 @@
           <file leaf-file-name="summary.txt" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/GAN/summary.txt">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="415">
-                  <caret line="34" column="8" selection-start-line="34" selection-start-column="0" selection-end-line="35" selection-end-column="0" />
+                <state relative-caret-position="482">
+                  <caret line="44" column="0" selection-start-line="44" selection-start-column="0" selection-end-line="44" selection-end-column="0" />
                   <folding />
                 </state>
               </provider>
@@ -886,7 +886,14 @@
       <option name="project" value="LOCAL" />
       <updated>1494626328531</updated>
     </task>
-    <option name="localTasksCounter" value="29" />
+    <task id="LOCAL-00029" summary="clipped fake loss to be positive and removed tanh in the AE output layer">
+      <created>1494634789299</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1494634789299</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -943,7 +950,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="finished VAE part, but haven't thoroughly tested. Start working on GAN" />
     <MESSAGE value="finished GAN part, but haven't tested it yet" />
     <MESSAGE value="GAN trainning passed compilation" />
     <MESSAGE value="both training and monitoring is running now, but the reconstruction is wrong.&#10;note that x_rec_rec-x_rec is always smaller than x_input-x_rec, because the formal are two nonsense..." />
@@ -968,7 +974,8 @@
     <MESSAGE value="Test CGAN on doi5.&#10;" />
     <MESSAGE value="DOI5: Going to use sigmoid for x_fake in doi5&#10;DOI2: Used WGAN style embedding with k_t clipped in (0.1,1). &#10;Current results:&#10;Fix rate of s_w will have gradient explosion for all s_&#10;ALI style embedding will result in mode collapse&#10;WGAN style embedding will result in gradient explosion of s_w&#10;" />
     <MESSAGE value="Added cosine pulling term, wishing to avoid mode collapse, going to run in doi5.&#10;doi2 is testing the influence of AE tanh output has on BEGAN" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added cosine pulling term, wishing to avoid mode collapse, going to run in doi5.&#10;doi2 is testing the influence of AE tanh output has on BEGAN" />
+    <MESSAGE value="clipped fake loss to be positive and removed tanh in the AE output layer" />
+    <option name="LAST_COMMIT_MESSAGE" value="clipped fake loss to be positive and removed tanh in the AE output layer" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2338,14 +2345,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/GAN/summary.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="415">
-          <caret line="34" column="8" selection-start-line="34" selection-start-column="0" selection-end-line="35" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/python/ops/clip_ops.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="108">
@@ -2401,10 +2400,18 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/GAN/summary.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="482">
+          <caret line="44" column="0" selection-start-line="44" selection-start-column="0" selection-end-line="44" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/CGAN.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="165">
-          <caret line="402" column="47" selection-start-line="402" selection-start-column="47" selection-end-line="402" selection-end-column="47" />
+        <state relative-caret-position="31">
+          <caret line="403" column="0" selection-start-line="403" selection-start-column="0" selection-end-line="403" selection-end-column="0" />
           <folding>
             <element signature="n#!!doc" expanded="false" />
             <element signature="e#728#1358#0" expanded="false" />
@@ -2452,7 +2459,7 @@
             <element signature="e#13240#13343#0" expanded="false" />
             <element signature="e#13738#13769#0" expanded="false" />
             <element signature="e#13920#13940#0" expanded="false" />
-            <element signature="e#24231#24247#0" expanded="false" />
+            <element signature="e#24246#24262#0" expanded="false" />
           </folding>
         </state>
       </provider>
