@@ -303,7 +303,7 @@ class GAN4(object):
             if idx < repeat_num - 1:
                 x = upscale(x, 2, data_format)
 
-        out = slim.conv2d(x, input_channel, 3, 1, activation_fn=tf.tanh, data_format=data_format)
+        out = slim.conv2d(x, input_channel, 3, 1, activation_fn=None, data_format=data_format)
 
         return out
 
@@ -426,11 +426,12 @@ class GAN4(object):
         self.loss_sr = tf.reduce_mean(tf.abs(x_sr - self.x_real))
         self.loss_sw = tf.reduce_mean(tf.abs(x_sw - self.x_real))
         self.loss_sf = tf.reduce_mean(tf.abs(x_sf - self.x_gen))
-        self.g_loss = self.loss_sf + 0.3*self.pulling_term
-        d_loss = (self.loss_sr - self.loss_sw*self.k_t)
-        self.d_loss = d_loss - self.k_t * self.g_loss
-        self.balance = self.gamma * d_loss - self.g_loss
-        self.measure = d_loss + tf.abs(self.balance)
+        self.g_loss = self.loss_sf - tf.log(1-self.pulling_term) # consider logarithm perhaps
+        margin = 1
+        d_loss1 = self.loss_sr + self.k_t*tf.clip_by_value(margin - self.loss_sw,0.,1.)
+        self.d_loss = d_loss1 + self.k_t * tf.clip_by_value(margin - self.loss_sf, 0., 1.)
+        self.balance = self.gamma * d_loss1 - self.g_loss
+        self.measure = d_loss1 + tf.abs(self.balance)
 
         g_optimizer, d_optimizer = tf.train.AdamOptimizer(self.g_lr), tf.train.AdamOptimizer(self.d_lr)
         d_optim = d_optimizer.minimize(self.d_loss, var_list=self.D_var)
@@ -451,7 +452,7 @@ class GAN4(object):
             tf.summary.scalar("misc/d_lr", self.d_lr),
             tf.summary.scalar("misc/g_lr", self.g_lr),
             tf.summary.scalar("misc/balance", self.balance),
-            tf.summary.scalar("misc/balance", self.pulling_term),
+            tf.summary.scalar("misc/pulling_term", self.pulling_term),
         ])
         self.summary_writer = tf.summary.FileWriter(self.logdir)
         saver = tf.train.Saver()
@@ -520,7 +521,7 @@ if __name__ == "__main__":
            'd_lr': 0.00008,
            'g_optimizer': 'adam',
            'd_optimizer': 'adam',
-           'gamma': 0.4,
+           'gamma': 0.5,
            'lambda_k': 0.001,
            'k_t': 0.0,
            # 'learning_rate': lr_schedule,

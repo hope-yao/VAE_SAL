@@ -35,3 +35,10 @@
     WGAN style embedding will result in gradient explosion of s_w
     WGAN style embedding with with k_t clipped in (0.1,1) will still have gradient explosion
     WGAN style embedding with with tanh output in AE won't have gradient explosion but has mode collapse again
+
+25. Notice BEGAN EBGAN all don't have activation for AE.
+26. Notice EBGAN GAN-CLS all have a margin 1 before loss_fake
+
+27. 0.2PT is not converging and still have mode collpase
+28. 1PT is converging but variance is still small and k_t is almost zero. Consider logarithm instead
+
