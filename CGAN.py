@@ -363,7 +363,7 @@ class GAN4(object):
         self.snapshot_interval = cfg['snapshot_interval']
 
         from data_loader import get_loader
-        data_path = '/home/hope-yao/Documents/Data/img_align_celeba'
+        data_path = '/home/doi5/Documents/Hope/img_align_celeba'
         batch_size = 16
         input_scale_size = 64
         data_format = 'NCHW'
@@ -394,7 +394,7 @@ class GAN4(object):
             h = slim.fully_connected(zy, self.latent_dim, activation_fn=tf.sigmoid)
             h_real, h_fake = tf.split(h, 2) # x_fake is generated using h_real
 
-            self.x_gen = self.BEGAN_dec(h_real, hidden_num=128 ,act_func=self.act_func, input_channel=3, data_format='NCHW', repeat_num=4)
+            self.x_gen = self.BEGAN_dec(self.z_input, hidden_num=128 ,act_func=self.act_func, input_channel=3, data_format='NCHW', repeat_num=4)
         self.G_var = tf.contrib.framework.get_variables(vs_g)
         with tf.variable_scope("D") as vs_d:
             self.x_real = norm_img(self.x_input)
@@ -406,7 +406,7 @@ class GAN4(object):
             denom = tf.sqrt(tf.reduce_sum(tf.square(z_d_gen), reduction_indices=[1], keep_dims=True))
             pt = tf.square(tf.transpose((nom / denom), (1, 0)) / denom)
             pt = pt - tf.diag(tf.diag_part(pt))
-            self.pulling_term = tf.reduce_sum(pt) / (self.batch_size * (self.batch_size - 1))
+            self.pulling_term = 0. #tf.reduce_sum(pt) / (self.batch_size * (self.batch_size - 1))
 
             # # CONDITION IN ALI STYLE, WHICH HAS MODE COLLPASE
             # z_real, z_fake = tf.split(z_d, 2)
@@ -418,8 +418,9 @@ class GAN4(object):
             zy = tf.concat([tf.concat([dz_embed_real, self.y_input],1),tf.concat([dz_embed_real, self.y_input_fake],1),tf.concat([dz_embed_fake, self.y_input],1)], 0)
             din_zy = slim.fully_connected(zy, self.latent_dim, activation_fn=tf.sigmoid)
 
-            d_out = self.BEGAN_dec(din_zy, hidden_num=128 ,act_func=self.act_func, input_channel=3, data_format='NCHW', repeat_num=4)
-            x_sr, x_sw, x_sf = tf.split(d_out, 3)
+            d_out = self.BEGAN_dec(z_d, hidden_num=128 ,act_func=self.act_func, input_channel=3, data_format='NCHW', repeat_num=4)
+            x_sr, x_sf = tf.split(d_out, 2)
+            x_sw = 0
         self.D_var = tf.contrib.framework.get_variables(vs_d)
         self.x_sr, self.x_sw, self.x_sf = x_sr, x_sw, x_sf
 
@@ -428,8 +429,8 @@ class GAN4(object):
         self.loss_sf = tf.reduce_mean(tf.abs(x_sf - self.x_gen))
         self.g_loss = self.loss_sf - tf.log(1-self.pulling_term) # consider logarithm perhaps
         margin = 1
-        d_loss1 = self.loss_sr + self.k_t*tf.clip_by_value(margin - self.loss_sw,0.,1.)
-        self.d_loss = d_loss1 + self.k_t * tf.clip_by_value(margin - self.loss_sf, 0., 1.)
+        d_loss1 = self.loss_sr #+ self.k_t*tf.clip_by_value(margin - self.loss_sw,0.,1.)
+        self.d_loss = d_loss1 + self.k_t * (- self.loss_sf) #tf.clip_by_value(margin - self.loss_sf, 0., 1.)
         self.balance = self.gamma * d_loss1 - self.g_loss
         self.measure = d_loss1 + tf.abs(self.balance)
 
@@ -486,20 +487,19 @@ class GAN4(object):
                 y_input = self.y_train[i * self.batch_size:(i + 1) * self.batch_size]
                 z_input = np.random.uniform(-1, 1, size=(self.batch_size, self.latent_dim)).astype('float32')
                 feed_dict = {self.x_input: x_input, self.y_input: y_input, self.z_input: z_input}
-                result = sess.run([self.loss_sr, self.loss_sw, self.loss_sf, self.d_loss, self.g_loss, self.measure, self.k_update, self.k_t, self.pulling_term], feed_dict)
+                result = sess.run([self.loss_sr, self.loss_sw, self.loss_sf, self.d_loss, self.g_loss, self.measure, self.k_update, self.k_t], feed_dict)
                 print(result)
                 if counter % self.snapshot_interval == 0:
                     summary = sess.run(self.summary_op,feed_dict)
                     self.summary_writer.add_summary(summary, counter)
                     self.summary_writer.flush()
                 if counter % (10 * self.snapshot_interval) == 0:
-                    x_real_img, x_gen_img, x_sr_img, x_sw_img, x_sf_img = \
-                        sess.run([self.x_real, self.x_gen, self.x_sr, self.x_sw, self.x_sf], feed_dict_fix)
+                    x_real_img, x_gen_img, x_sr_img, x_sf_img = \
+                        sess.run([self.x_real, self.x_gen, self.x_sr, self.x_sf], feed_dict_fix)
                     nrow = 12
                     all_G_z = np.concatenate([255 * (x_real_img[0:nrow].transpose((0, 2, 3, 1)) + 1) / 2,
                                               255 * (x_gen_img[0:nrow].transpose((0, 2, 3, 1)) + 1) / 2,
                                               255 * (x_sr_img[0:nrow].transpose((0, 2, 3, 1)) + 1) / 2,
-                                              255 * (x_sw_img[0:nrow].transpose((0, 2, 3, 1)) + 1) / 2,
                                               255 * (x_sf_img[0:nrow].transpose((0, 2, 3, 1)) + 1) / 2])
                     save_image(all_G_z, '{}/itr{}.png'.format(self.logdir, counter), nrow=nrow)
 
@@ -526,7 +526,7 @@ if __name__ == "__main__":
            'k_t': 0.0,
            # 'learning_rate': lr_schedule,
            'vae': False,
-           'datadir': '/home/hope-yao/Documents/Data',
+           'datadir': '/home/doi5/Documents/Hope',
            'pre_train': 0, # how many steps to pretrain the VAE
            'snapshot_interval': 10,
            }
