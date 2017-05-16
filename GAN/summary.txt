@@ -35,3 +35,5 @@
     WGAN style embedding will result in gradient explosion of s_w
     WGAN style embedding with with k_t clipped in (0.1,1) will still have gradient explosion
     WGAN style embedding with with tanh output in AE won't have gradient explosion but has mode collapse again
+
+25. IMPORTANT FIDING. Latent space with nonlinear activation will change the correlation of latent vectors! Thus, activation is not preferred at least in the AE FC layers.

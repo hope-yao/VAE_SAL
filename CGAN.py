@@ -389,9 +389,9 @@ class GAN4(object):
             # h = slim.fully_connected(zy, self.latent_dim, activation_fn=tf.sigmoid)
             # h_real, h_fake = tf.split(h, 2) # x_fake is generated using h_real
             # CONDITION IN WGAN STYLE
-            z_embed = slim.fully_connected(self.z_input, self.latent_dim, activation_fn=tf.sigmoid)
+            z_embed = slim.fully_connected(self.z_input, self.latent_dim, activation_fn=None)
             zy = tf.concat([tf.concat([z_embed, self.y_input],1),tf.concat([z_embed, self.y_input_fake],1)], 0)
-            h = slim.fully_connected(zy, self.latent_dim, activation_fn=tf.sigmoid)
+            h = slim.fully_connected(zy, self.latent_dim, activation_fn=None)
             h_real, h_fake = tf.split(h, 2) # x_fake is generated using h_real
 
             self.x_gen = self.BEGAN_dec(h_real, hidden_num=128 ,act_func=self.act_func, input_channel=3, data_format='NCHW', repeat_num=4)
@@ -413,10 +413,10 @@ class GAN4(object):
             # din_zy = tf.concat([tf.concat([z_real, y_embed_real],1),tf.concat([z_real, y_embed_fake],1),tf.concat([z_fake, y_embed_real],1)], 0)
             # din_zy = slim.fully_connected(din_zy, self.latent_dim, activation_fn=tf.sigmoid)
             # CONDITION IN WGAN STYLE
-            dz_embed = slim.fully_connected(z_d, self.latent_dim, activation_fn=tf.sigmoid)
+            dz_embed = slim.fully_connected(z_d, self.latent_dim, activation_fn=None)
             dz_embed_real, dz_embed_fake = tf.split(dz_embed, 2)
             zy = tf.concat([tf.concat([dz_embed_real, self.y_input],1),tf.concat([dz_embed_real, self.y_input_fake],1),tf.concat([dz_embed_fake, self.y_input],1)], 0)
-            din_zy = slim.fully_connected(zy, self.latent_dim, activation_fn=tf.sigmoid)
+            din_zy = slim.fully_connected(zy, self.latent_dim, activation_fn=None)
 
             d_out = self.BEGAN_dec(din_zy, hidden_num=128 ,act_func=self.act_func, input_channel=3, data_format='NCHW', repeat_num=4)
             x_sr, x_sw, x_sf = tf.split(d_out, 3)
@@ -426,10 +426,10 @@ class GAN4(object):
         self.loss_sr = tf.reduce_mean(tf.abs(x_sr - self.x_real))
         self.loss_sw = tf.reduce_mean(tf.abs(x_sw - self.x_real))
         self.loss_sf = tf.reduce_mean(tf.abs(x_sf - self.x_gen))
-        self.g_loss = self.loss_sf + 0.3*self.pulling_term
+        self.g_loss = self.loss_sf + self.pulling_term
         d_loss = (self.loss_sr - self.loss_sw*self.k_t)
         self.d_loss = d_loss - self.k_t * self.g_loss
-        self.balance = self.gamma * d_loss - self.g_loss
+        self.balance = self.gamma * d_loss - self.loss_sf
         self.measure = d_loss + tf.abs(self.balance)
 
         g_optimizer, d_optimizer = tf.train.AdamOptimizer(self.g_lr), tf.train.AdamOptimizer(self.d_lr)
@@ -501,6 +501,10 @@ class GAN4(object):
                                               255 * (x_sw_img[0:nrow].transpose((0, 2, 3, 1)) + 1) / 2,
                                               255 * (x_sf_img[0:nrow].transpose((0, 2, 3, 1)) + 1) / 2])
                     save_image(all_G_z, '{}/itr{}.png'.format(self.logdir, counter), nrow=nrow)
+                if counter in [1e2,1e4,1e5]:
+                    snapshot_name = "%s_%s" % ('experiment', str(counter))
+                    fn = saver.save(sess, "%s/%s.ckpt" % (self.modeldir, snapshot_name))
+                    print("Model saved in file: %s" % fn)
 
 if __name__ == "__main__":
 
