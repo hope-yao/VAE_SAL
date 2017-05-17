@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9095eff0-9b9a-48b8-8d3a-556039fdab1d" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/VAE_SAL.iml" afterPath="$PROJECT_DIR$/.idea/VAE_SAL.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
+    <list default="true" id="9095eff0-9b9a-48b8-8d3a-556039fdab1d" name="Default" comment="Merge remote-tracking branch 'origin/GAN' into GAN&#10;&#10;Conflicts:&#10;&#9;CGAN.py&#10;&#9;GAN/summary.txt&#10;">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CGAN.py" afterPath="$PROJECT_DIR$/CGAN.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/GAN/summary.txt" afterPath="$PROJECT_DIR$/GAN/summary.txt" />
     </list>
     <ignored path="3D VAE.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -24,14 +23,14 @@
     <favorites_list name="3D VAE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.7679758">
+    <splitter split-orientation="horizontal" split-proportion="0.6320927">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file leaf-file-name="AE_GAN_TF.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/AE_GAN_TF.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="3375">
-                  <caret line="425" column="20" lean-forward="false" selection-start-line="425" selection-start-column="8" selection-end-line="425" selection-end-column="20" />
+                <state relative-caret-position="174">
+                  <caret line="463" column="64" selection-start-line="463" selection-start-column="64" selection-end-line="463" selection-end-column="64" />
                   <folding>
                     <element signature="e#456#479#0" expanded="true" />
                     <element signature="e#728#1358#0" expanded="false" />
@@ -69,8 +68,8 @@
           <file leaf-file-name="CGAN.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/CGAN.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="141">
-                  <caret line="149" column="33" lean-forward="true" selection-start-line="149" selection-start-column="33" selection-end-line="149" selection-end-column="33" />
+                <state relative-caret-position="-1018">
+                  <caret line="405" column="19" selection-start-line="405" selection-start-column="19" selection-end-line="405" selection-end-column="19" />
                   <folding>
                     <element signature="n#!!doc" expanded="false" />
                     <element signature="e#728#1358#0" expanded="false" />
@@ -85,47 +84,55 @@
                     <element signature="e#3016#3113#0" expanded="false" />
                     <element signature="e#3140#3176#0" expanded="false" />
                     <element signature="e#3203#3239#0" expanded="false" />
-                    <element signature="e#3286#3483#0" expanded="false" />
-                    <element signature="e#3544#3764#0" expanded="false" />
-                    <element signature="e#3578#3683#0" expanded="false" />
-                    <element signature="e#3806#3920#0" expanded="false" />
-                    <element signature="e#3964#4094#0" expanded="false" />
-                    <element signature="e#4155#4496#0" expanded="false" />
-                    <element signature="e#4256#4304#0" expanded="false" />
-                    <element signature="e#4357#4412#0" expanded="false" />
-                    <element signature="e#5536#5669#0" expanded="false" />
-                    <element signature="e#5717#6436#0" expanded="false" />
-                    <element signature="e#6340#6402#0" expanded="false" />
-                    <element signature="e#6503#7307#0" expanded="false" />
-                    <element signature="e#6562#7284#0" expanded="false" />
-                    <element signature="e#6637#6726#0" expanded="false" />
-                    <element signature="e#6848#6942#0" expanded="false" />
-                    <element signature="e#6977#7284#0" expanded="false" />
-                    <element signature="e#7370#8165#0" expanded="false" />
-                    <element signature="e#7429#8143#0" expanded="false" />
-                    <element signature="e#7801#7890#0" expanded="false" />
-                    <element signature="e#7903#7963#0" expanded="false" />
-                    <element signature="e#8229#8806#0" expanded="false" />
-                    <element signature="e#8469#8540#0" expanded="false" />
                     <element signature="e#8870#9507#0" expanded="false" />
-                    <element signature="e#9140#9221#0" expanded="false" />
-                    <element signature="e#9569#9906#0" expanded="false" />
-                    <element signature="e#9968#10325#0" expanded="false" />
-                    <element signature="e#11615#11882#0" expanded="false" />
-                    <element signature="e#13240#13343#0" expanded="false" />
-                    <element signature="e#13738#13769#0" expanded="false" />
-                    <element signature="e#13920#13940#0" expanded="false" />
-                    <element signature="e#24135#24151#0" expanded="false" />
+                    <marker date="1495061289147" expanded="false" signature="3281:3483" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="3539:3764" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="3569:3683" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="3801:3920" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="3959:4094" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="4146:4496" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="4243:4304" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="4344:4412" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="5527:5669" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="5708:6436" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="6327:6402" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="6493:7307" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="6549:7284" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="6620:6726" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="6831:6942" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="6960:7284" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="7360:8165" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="7416:8143" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="7784:7890" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="7903:8019" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="8469:8721" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="8861:9507" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="9140:9422" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="9560:9906" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="9959:10325" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="10644:11144" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="10928:11144" ph="..." />
+                    <marker date="1495061289147" expanded="false" signature="11602:11882" ph="..." />
                   </folding>
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="math_ops.py" pinned="false" current-in-tab="false">
-            <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/python/ops/math_ops.py">
+          <file leaf-file-name="nn_impl.py" pinned="false" current-in-tab="false">
+            <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/python/ops/nn_impl.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="5400">
-                  <caret line="386" column="8" lean-forward="false" selection-start-line="386" selection-start-column="4" selection-end-line="386" selection-end-column="8" />
+                <state relative-caret-position="168">
+                  <caret line="100" column="48" selection-start-line="100" selection-start-column="48" selection-end-line="100" selection-end-column="48" />
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="Keras_test.py" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/Keras_test.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="369">
+                  <caret line="176" column="0" selection-start-line="176" selection-start-column="0" selection-end-line="176" selection-end-column="0" />
                   <folding />
                 </state>
               </provider>
@@ -134,8 +141,8 @@
           <file leaf-file-name="data_loader.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/data_loader.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="555">
-                  <caret line="37" column="0" lean-forward="false" selection-start-line="37" selection-start-column="0" selection-end-line="37" selection-end-column="0" />
+                <state relative-caret-position="442">
+                  <caret line="37" column="0" selection-start-line="37" selection-start-column="0" selection-end-line="37" selection-end-column="0" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
@@ -146,8 +153,8 @@
           <file leaf-file-name="pydevd.py" pinned="false" current-in-tab="false">
             <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="13920">
-                  <caret line="963" column="0" lean-forward="false" selection-start-line="963" selection-start-column="0" selection-end-line="963" selection-end-column="0" />
+                <state relative-caret-position="153">
+                  <caret line="963" column="0" selection-start-line="963" selection-start-column="0" selection-end-line="963" selection-end-column="0" />
                   <folding />
                 </state>
               </provider>
@@ -160,8 +167,8 @@
           <file leaf-file-name="summary.txt" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/GAN/summary.txt">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="660">
-                  <caret line="44" column="0" lean-forward="false" selection-start-line="44" selection-start-column="0" selection-end-line="44" selection-end-column="0" />
+                <state relative-caret-position="355">
+                  <caret line="45" column="0" selection-start-line="45" selection-start-column="0" selection-end-line="45" selection-end-column="0" />
                   <folding />
                 </state>
               </provider>
@@ -170,9 +177,24 @@
           <file leaf-file-name="VAE_GAN_BAK" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/VAE_GAN_BAK">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="7965">
-                  <caret line="531" column="20" lean-forward="false" selection-start-line="531" selection-start-column="20" selection-end-line="531" selection-end-column="20" />
-                  <folding />
+                <state relative-caret-position="215">
+                  <caret line="703" column="0" selection-start-line="703" selection-start-column="0" selection-end-line="707" selection-end-column="0" />
+                  <folding>
+                    <element signature="e#25483#26397#0" expanded="false" />
+                    <element signature="e#26438#26779#0" expanded="false" />
+                    <element signature="e#26539#26587#0" expanded="false" />
+                    <element signature="e#26640#26695#0" expanded="false" />
+                    <element signature="e#28766#29566#0" expanded="false" />
+                    <element signature="e#29620#30212#0" expanded="false" />
+                    <element signature="e#30266#30918#0" expanded="false" />
+                    <element signature="e#30970#31317#0" expanded="false" />
+                    <element signature="e#31369#31736#0" expanded="false" />
+                    <element signature="e#31794#31973#0" expanded="false" />
+                    <element signature="e#32025#32234#0" expanded="false" />
+                    <element signature="e#32557#32641#0" expanded="false" />
+                    <element signature="e#36127#36846#0" expanded="false" />
+                    <element signature="e#36750#36812#0" expanded="false" />
+                  </folding>
                 </state>
               </provider>
             </entry>
@@ -180,8 +202,8 @@
           <file leaf-file-name="test file.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/test file.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="585">
-                  <caret line="146" column="42" lean-forward="false" selection-start-line="146" selection-start-column="42" selection-end-line="146" selection-end-column="42" />
+                <state relative-caret-position="-768">
+                  <caret line="146" column="42" selection-start-line="146" selection-start-column="42" selection-end-line="146" selection-end-column="42" />
                   <folding>
                     <element signature="n#!!doc" expanded="false" />
                     <element signature="e#728#1358#0" expanded="false" />
@@ -286,16 +308,26 @@
         <option value="$PROJECT_DIR$/AE_GAN_TF.py" />
         <option value="$PROJECT_DIR$/VAE_GAN_BAK" />
         <option value="$PROJECT_DIR$/test file.py" />
-        <option value="$PROJECT_DIR$/GAN/summary.txt" />
         <option value="$PROJECT_DIR$/CGAN.py" />
+        <option value="$PROJECT_DIR$/GAN/summary.txt" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="65" />
-    <option name="y" value="24" />
-    <option name="width" value="1855" />
-    <option name="height" value="1056" />
+    <option name="x" value="64" />
+    <option name="y" value="-4" />
+    <option name="width" value="1857" />
+    <option name="height" value="1085" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="false">
+    <OptionsSetting value="true" id="Add" />
+    <OptionsSetting value="true" id="Remove" />
+    <OptionsSetting value="true" id="Checkout" />
+    <OptionsSetting value="true" id="Update" />
+    <OptionsSetting value="true" id="Status" />
+    <OptionsSetting value="true" id="Edit" />
+    <ConfirmationsSetting value="0" id="Add" />
+    <ConfirmationsSetting value="0" id="Remove" />
   </component>
   <component name="ProjectView">
     <navigator currentView="ProjectPane" proportions="" version="1">
@@ -312,8 +344,15 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="VAE_SAL" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+          </PATH>
           <PATH>
             <PATH_ELEMENT>
               <option name="myItemId" value="VAE_SAL" />
@@ -326,7 +365,6 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scratches" />
       <pane id="Scope" />
     </panes>
   </component>
@@ -432,6 +470,17 @@
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
     </configuration>
+    <configuration default="true" type="BashConfigurationType" factoryName="Bash">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="INTERPRETER_PATH" value="/bin/bash" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <module name="" />
+      <envs />
+      <method />
+    </configuration>
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -459,19 +508,6 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="3D VAE" />
-      <method />
-    </configuration>
-    <configuration default="true" type="ccruntests" factoryName="Run Study Tests">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="VAE_SAL" />
-      <option name="studyTest" value="" />
       <method />
     </configuration>
     <configuration default="true" type="tests" factoryName="Attests">
@@ -871,27 +907,27 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="65" y="24" width="1855" height="1056" extended-state="6" />
+    <frame x="64" y="-4" width="1857" height="1085" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.09612234" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.47793326" sideWeight="0.6065665" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32939914" sideWeight="0.4980523" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.36490852" sideWeight="0.7295492" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.49356222" sideWeight="0.6967167" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.08792432" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="LuaJ" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.45386267" sideWeight="0.34835836" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.45386267" sideWeight="0.6516416" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32939914" sideWeight="0.4980523" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.34763947" sideWeight="0.78519756" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.42703864" sideWeight="0.7217585" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.36587983" sideWeight="0.27045074" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="LuaJ" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32832617" sideWeight="0.49582636" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
     </layout>
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -1029,6 +1065,16 @@
           <line>378</line>
           <option name="timeStamp" value="270" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/CGAN.py</url>
+          <line>462</line>
+          <option name="timeStamp" value="436" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/CGAN.py</url>
+          <line>509</line>
+          <option name="timeStamp" value="439" />
+        </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
@@ -1040,37 +1086,16 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="436" />
+      <option name="time" value="440" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/keras/layers/pooling.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="227">
-          <caret line="172" column="53" lean-forward="false" selection-start-line="172" selection-start-column="53" selection-end-line="172" selection-end-column="53" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/keras/layers/convolutional.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="156">
-          <caret line="367" column="15" lean-forward="false" selection-start-line="367" selection-start-column="8" selection-end-line="367" selection-end-column="15" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/Data/fuel/fuel/datasets/hdf5.py" />
-    <entry file="file://$PROJECT_DIR$/Keras_test.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="449">
-          <caret line="181" column="50" lean-forward="false" selection-start-line="181" selection-start-column="50" selection-end-line="181" selection-end-column="50" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/VAE_Venation.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-1695">
-          <caret line="10" column="28" lean-forward="false" selection-start-line="10" selection-start-column="28" selection-end-line="10" selection-end-column="28" />
+          <caret line="10" column="28" selection-start-line="10" selection-start-column="28" selection-end-line="10" selection-end-column="28" />
           <folding>
             <element signature="e#8737#9091#0" expanded="false" />
           </folding>
@@ -1080,28 +1105,28 @@
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/keras/datasets/mnist.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="315">
-          <caret line="21" column="6" lean-forward="false" selection-start-line="21" selection-start-column="0" selection-end-line="22" selection-end-column="0" />
+          <caret line="21" column="6" selection-start-line="21" selection-start-column="0" selection-end-line="22" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/keras/models.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="801">
-          <caret line="126" column="45" lean-forward="false" selection-start-line="126" selection-start-column="36" selection-end-line="126" selection-end-column="45" />
+          <caret line="126" column="45" selection-start-line="126" selection-start-column="36" selection-end-line="126" selection-end-column="45" />
         </state>
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/keras/callbacks.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="261">
-          <caret line="606" column="14" lean-forward="false" selection-start-line="606" selection-start-column="14" selection-end-line="606" selection-end-column="14" />
+          <caret line="606" column="14" selection-start-line="606" selection-start-column="14" selection-end-line="606" selection-end-column="14" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/2DVAE.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="515">
-          <caret line="43" column="17" lean-forward="false" selection-start-line="43" selection-start-column="17" selection-end-line="43" selection-end-column="17" />
+          <caret line="43" column="17" selection-start-line="43" selection-start-column="17" selection-end-line="43" selection-end-column="17" />
           <folding>
             <element signature="e#160#178#0" expanded="false" />
           </folding>
@@ -1111,35 +1136,35 @@
     <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/_pydevd_bundle/pydevd_comm.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="172">
-          <caret line="1081" column="0" lean-forward="false" selection-start-line="1081" selection-start-column="0" selection-end-line="1081" selection-end-column="0" />
+          <caret line="1081" column="0" selection-start-line="1081" selection-start-column="0" selection-end-line="1081" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/python/ops/array_ops.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-259">
-          <caret line="772" column="14" lean-forward="false" selection-start-line="772" selection-start-column="14" selection-end-line="772" selection-end-column="14" />
+          <caret line="772" column="14" selection-start-line="772" selection-start-column="14" selection-end-line="772" selection-end-column="14" />
         </state>
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/keras/layers/core.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="174">
-          <caret line="626" column="0" lean-forward="false" selection-start-line="626" selection-start-column="0" selection-end-line="626" selection-end-column="0" />
+          <caret line="626" column="0" selection-start-line="626" selection-start-column="0" selection-end-line="626" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/keras/engine/topology.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="249">
-          <caret line="558" column="0" lean-forward="false" selection-start-line="558" selection-start-column="0" selection-end-line="558" selection-end-column="0" />
+          <caret line="558" column="0" selection-start-line="558" selection-start-column="0" selection-end-line="558" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/python/framework/ops.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="465">
-          <caret line="538" column="0" lean-forward="false" selection-start-line="538" selection-start-column="0" selection-end-line="538" selection-end-column="0" />
+          <caret line="538" column="0" selection-start-line="538" selection-start-column="0" selection-end-line="538" selection-end-column="0" />
           <folding>
             <element signature="n#!!doc" expanded="false" />
             <element signature="e#1876#2809#0" expanded="false" />
@@ -1721,28 +1746,28 @@
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/keras/optimizers.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="264">
-          <caret line="226" column="69" lean-forward="false" selection-start-line="226" selection-start-column="69" selection-end-line="226" selection-end-column="69" />
+          <caret line="226" column="69" selection-start-line="226" selection-start-column="69" selection-end-line="226" selection-end-column="69" />
         </state>
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/python/summary/writer/writer.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1275">
-          <caret line="98" column="6" lean-forward="false" selection-start-line="98" selection-start-column="6" selection-end-line="98" selection-end-column="42" />
+          <caret line="98" column="6" selection-start-line="98" selection-start-column="6" selection-end-line="98" selection-end-column="42" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/GAN/GAN.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="225">
-          <caret line="125" column="0" lean-forward="false" selection-start-line="125" selection-start-column="0" selection-end-line="125" selection-end-column="0" />
+          <caret line="125" column="0" selection-start-line="125" selection-start-column="0" selection-end-line="125" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/keras/engine/training.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="15255">
-          <caret line="1573" column="22" lean-forward="false" selection-start-line="1573" selection-start-column="8" selection-end-line="1573" selection-end-column="22" />
+          <caret line="1573" column="22" selection-start-line="1573" selection-start-column="8" selection-end-line="1573" selection-end-column="22" />
           <folding />
         </state>
       </provider>
@@ -1750,21 +1775,21 @@
     <entry file="file://$PROJECT_DIR$/GAN/util.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="285">
-          <caret line="94" column="0" lean-forward="false" selection-start-line="94" selection-start-column="0" selection-end-line="94" selection-end-column="0" />
+          <caret line="94" column="0" selection-start-line="94" selection-start-column="0" selection-end-line="94" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/GAN/VAE.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="435">
-          <caret line="189" column="0" lean-forward="false" selection-start-line="189" selection-start-column="0" selection-end-line="189" selection-end-column="0" />
+          <caret line="189" column="0" selection-start-line="189" selection-start-column="0" selection-end-line="189" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/3DVAE.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="94">
-          <caret line="38" column="37" lean-forward="false" selection-start-line="38" selection-start-column="37" selection-end-line="38" selection-end-column="37" />
+          <caret line="38" column="37" selection-start-line="38" selection-start-column="37" selection-end-line="38" selection-end-column="37" />
           <folding>
             <element signature="e#0#18#0" expanded="false" />
           </folding>
@@ -1774,7 +1799,7 @@
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/keras/backend/tensorflow_backend.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1502">
-          <caret line="2613" column="50" lean-forward="false" selection-start-line="2613" selection-start-column="17" selection-end-line="2613" selection-end-column="50" />
+          <caret line="2613" column="50" selection-start-line="2613" selection-start-column="17" selection-end-line="2613" selection-end-column="50" />
         </state>
       </provider>
     </entry>
@@ -1782,56 +1807,56 @@
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/PIL/Image.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="25170">
-          <caret line="1683" column="0" lean-forward="false" selection-start-line="1683" selection-start-column="0" selection-end-line="1683" selection-end-column="0" />
+          <caret line="1683" column="0" selection-start-line="1683" selection-start-column="0" selection-end-line="1683" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/contrib/layers/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="645">
-          <caret line="43" column="0" lean-forward="false" selection-start-line="43" selection-start-column="0" selection-end-line="43" selection-end-column="0" />
+          <caret line="43" column="0" selection-start-line="43" selection-start-column="0" selection-end-line="43" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/python/ops/init_ops.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="405">
-          <caret line="427" column="19" lean-forward="false" selection-start-line="427" selection-start-column="0" selection-end-line="427" selection-end-column="22" />
+          <caret line="427" column="19" selection-start-line="427" selection-start-column="0" selection-end-line="427" selection-end-column="22" />
         </state>
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/contrib/slim/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/contrib/slim/python/slim/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/contrib/slim/python/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/contrib/slim/nets.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="231">
-          <caret line="22" column="14" lean-forward="false" selection-start-line="22" selection-start-column="14" selection-end-line="22" selection-end-column="14" />
+          <caret line="22" column="14" selection-start-line="22" selection-start-column="14" selection-end-line="22" selection-end-column="14" />
         </state>
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/contrib/layers/python/layers/initializers.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="345">
-          <caret line="30" column="22" lean-forward="false" selection-start-line="30" selection-start-column="4" selection-end-line="30" selection-end-column="22" />
+          <caret line="30" column="22" selection-start-line="30" selection-start-column="4" selection-end-line="30" selection-end-column="22" />
         </state>
       </provider>
     </entry>
@@ -1839,14 +1864,14 @@
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/python/training/optimizer.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="3900">
-          <caret line="274" column="0" lean-forward="false" selection-start-line="274" selection-start-column="0" selection-end-line="274" selection-end-column="0" />
+          <caret line="274" column="0" selection-start-line="274" selection-start-column="0" selection-end-line="274" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/3DVAE_config.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2295">
-          <caret line="195" column="24" lean-forward="false" selection-start-line="195" selection-start-column="24" selection-end-line="195" selection-end-column="24" />
+          <caret line="195" column="24" selection-start-line="195" selection-start-column="24" selection-end-line="195" selection-end-column="24" />
           <folding>
             <element signature="n#!!doc" expanded="false" />
             <element signature="e#178#196#0" expanded="false" />
@@ -1892,22 +1917,15 @@
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/python/training/adagrad.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="285">
-          <caret line="27" column="22" lean-forward="false" selection-start-line="27" selection-start-column="6" selection-end-line="27" selection-end-column="22" />
+          <caret line="27" column="22" selection-start-line="27" selection-start-column="6" selection-end-line="27" selection-end-column="22" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/test_sal_rec.png" />
-    <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/contextlib.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="154">
-          <caret line="20" column="0" lean-forward="false" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/AE_GAN_keras.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="390">
-          <caret line="133" column="0" lean-forward="false" selection-start-line="133" selection-start-column="0" selection-end-line="134" selection-end-column="0" />
+          <caret line="133" column="0" selection-start-line="133" selection-start-column="0" selection-end-line="134" selection-end-column="0" />
           <folding>
             <element signature="n#!!doc" expanded="false" />
             <element signature="e#1033#1692#0" expanded="false" />
@@ -1942,28 +1960,28 @@
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/python/training/adam.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="183">
-          <caret line="35" column="0" lean-forward="false" selection-start-line="35" selection-start-column="0" selection-end-line="35" selection-end-column="0" />
+          <caret line="35" column="0" selection-start-line="35" selection-start-column="0" selection-end-line="35" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/python/training/supervisor.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="167">
-          <caret line="199" column="6" lean-forward="false" selection-start-line="199" selection-start-column="6" selection-end-line="199" selection-end-column="6" />
+          <caret line="199" column="6" selection-start-line="199" selection-start-column="6" selection-end-line="199" selection-end-column="6" />
         </state>
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/numpy/core/_methods.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="180">
-          <caret line="79" column="0" lean-forward="false" selection-start-line="79" selection-start-column="0" selection-end-line="79" selection-end-column="0" />
+          <caret line="79" column="0" selection-start-line="79" selection-start-column="0" selection-end-line="79" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="13920">
-          <caret line="963" column="0" lean-forward="false" selection-start-line="963" selection-start-column="0" selection-end-line="963" selection-end-column="0" />
+        <state relative-caret-position="153">
+          <caret line="963" column="0" selection-start-line="963" selection-start-column="0" selection-end-line="963" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -1971,22 +1989,37 @@
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/python/ops/gen_nn_ops.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="214">
-          <caret line="2346" column="40" lean-forward="false" selection-start-line="2346" selection-start-column="36" selection-end-line="2346" selection-end-column="40" />
+          <caret line="2346" column="40" selection-start-line="2346" selection-start-column="36" selection-end-line="2346" selection-end-column="40" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/VAE_GAN_BAK">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="7965">
-          <caret line="531" column="20" lean-forward="false" selection-start-line="531" selection-start-column="20" selection-end-line="531" selection-end-column="20" />
-          <folding />
+        <state relative-caret-position="215">
+          <caret line="703" column="0" selection-start-line="703" selection-start-column="0" selection-end-line="707" selection-end-column="0" />
+          <folding>
+            <element signature="e#25483#26397#0" expanded="false" />
+            <element signature="e#26438#26779#0" expanded="false" />
+            <element signature="e#26539#26587#0" expanded="false" />
+            <element signature="e#26640#26695#0" expanded="false" />
+            <element signature="e#28766#29566#0" expanded="false" />
+            <element signature="e#29620#30212#0" expanded="false" />
+            <element signature="e#30266#30918#0" expanded="false" />
+            <element signature="e#30970#31317#0" expanded="false" />
+            <element signature="e#31369#31736#0" expanded="false" />
+            <element signature="e#31794#31973#0" expanded="false" />
+            <element signature="e#32025#32234#0" expanded="false" />
+            <element signature="e#32557#32641#0" expanded="false" />
+            <element signature="e#36127#36846#0" expanded="false" />
+            <element signature="e#36750#36812#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/test file.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="585">
-          <caret line="146" column="42" lean-forward="false" selection-start-line="146" selection-start-column="42" selection-end-line="146" selection-end-column="42" />
+        <state relative-caret-position="-768">
+          <caret line="146" column="42" selection-start-line="146" selection-start-column="42" selection-end-line="146" selection-end-column="42" />
           <folding>
             <element signature="n#!!doc" expanded="false" />
             <element signature="e#728#1358#0" expanded="false" />
@@ -2045,7 +2078,7 @@
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/python/ops/math_ops.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="5400">
-          <caret line="386" column="8" lean-forward="false" selection-start-line="386" selection-start-column="4" selection-end-line="386" selection-end-column="8" />
+          <caret line="386" column="8" selection-start-line="386" selection-start-column="4" selection-end-line="386" selection-end-column="8" />
           <folding />
         </state>
       </provider>
@@ -2053,14 +2086,32 @@
     <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/python/ops/clip_ops.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="108">
-          <caret line="32" column="43" lean-forward="false" selection-start-line="32" selection-start-column="43" selection-end-line="32" selection-end-column="43" />
+          <caret line="32" column="43" selection-start-line="32" selection-start-column="43" selection-end-line="32" selection-end-column="43" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data_loader.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="442">
+          <caret line="37" column="0" selection-start-line="37" selection-start-column="0" selection-end-line="37" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Keras_test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="369">
+          <caret line="176" column="0" selection-start-line="176" selection-start-column="0" selection-end-line="176" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/AE_GAN_TF.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3375">
-          <caret line="425" column="20" lean-forward="false" selection-start-line="425" selection-start-column="8" selection-end-line="425" selection-end-column="20" />
+        <state relative-caret-position="174">
+          <caret line="463" column="64" selection-start-line="463" selection-start-column="64" selection-end-line="463" selection-end-column="64" />
           <folding>
             <element signature="e#456#479#0" expanded="true" />
             <element signature="e#728#1358#0" expanded="false" />
@@ -2094,28 +2145,34 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/data_loader.py">
+    <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/contextlib.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="555">
-          <caret line="37" column="0" lean-forward="false" selection-start-line="37" selection-start-column="0" selection-end-line="37" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="169">
+          <caret line="21" column="0" selection-start-line="21" selection-start-column="0" selection-end-line="21" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/GAN/summary.txt">
+    <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/python/ops/gen_math_ops.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="660">
-          <caret line="44" column="0" lean-forward="false" selection-start-line="44" selection-start-column="0" selection-end-line="44" selection-end-column="0" />
+        <state relative-caret-position="345">
+          <caret line="2755" column="0" selection-start-line="2755" selection-start-column="0" selection-end-line="2755" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/anaconda2/lib/python2.7/site-packages/tensorflow/python/ops/nn_impl.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="168">
+          <caret line="100" column="48" selection-start-line="100" selection-start-column="48" selection-end-line="100" selection-end-column="48" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/CGAN.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="141">
-          <caret line="149" column="33" lean-forward="true" selection-start-line="149" selection-start-column="33" selection-end-line="149" selection-end-column="33" />
+        <state relative-caret-position="-1018">
+          <caret line="405" column="19" selection-start-line="405" selection-start-column="19" selection-end-line="405" selection-end-column="19" />
           <folding>
             <element signature="n#!!doc" expanded="false" />
             <element signature="e#728#1358#0" expanded="false" />
@@ -2130,38 +2187,44 @@
             <element signature="e#3016#3113#0" expanded="false" />
             <element signature="e#3140#3176#0" expanded="false" />
             <element signature="e#3203#3239#0" expanded="false" />
-            <element signature="e#3286#3483#0" expanded="false" />
-            <element signature="e#3544#3764#0" expanded="false" />
-            <element signature="e#3578#3683#0" expanded="false" />
-            <element signature="e#3806#3920#0" expanded="false" />
-            <element signature="e#3964#4094#0" expanded="false" />
-            <element signature="e#4155#4496#0" expanded="false" />
-            <element signature="e#4256#4304#0" expanded="false" />
-            <element signature="e#4357#4412#0" expanded="false" />
-            <element signature="e#5536#5669#0" expanded="false" />
-            <element signature="e#5717#6436#0" expanded="false" />
-            <element signature="e#6340#6402#0" expanded="false" />
-            <element signature="e#6503#7307#0" expanded="false" />
-            <element signature="e#6562#7284#0" expanded="false" />
-            <element signature="e#6637#6726#0" expanded="false" />
-            <element signature="e#6848#6942#0" expanded="false" />
-            <element signature="e#6977#7284#0" expanded="false" />
-            <element signature="e#7370#8165#0" expanded="false" />
-            <element signature="e#7429#8143#0" expanded="false" />
-            <element signature="e#7801#7890#0" expanded="false" />
-            <element signature="e#7903#7963#0" expanded="false" />
-            <element signature="e#8229#8806#0" expanded="false" />
-            <element signature="e#8469#8540#0" expanded="false" />
             <element signature="e#8870#9507#0" expanded="false" />
-            <element signature="e#9140#9221#0" expanded="false" />
-            <element signature="e#9569#9906#0" expanded="false" />
-            <element signature="e#9968#10325#0" expanded="false" />
-            <element signature="e#11615#11882#0" expanded="false" />
-            <element signature="e#13240#13343#0" expanded="false" />
-            <element signature="e#13738#13769#0" expanded="false" />
-            <element signature="e#13920#13940#0" expanded="false" />
-            <element signature="e#24135#24151#0" expanded="false" />
+            <marker date="1495061289147" expanded="false" signature="3281:3483" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="3539:3764" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="3569:3683" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="3801:3920" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="3959:4094" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="4146:4496" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="4243:4304" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="4344:4412" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="5527:5669" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="5708:6436" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="6327:6402" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="6493:7307" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="6549:7284" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="6620:6726" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="6831:6942" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="6960:7284" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="7360:8165" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="7416:8143" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="7784:7890" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="7903:8019" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="8469:8721" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="8861:9507" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="9140:9422" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="9560:9906" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="9959:10325" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="10644:11144" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="10928:11144" ph="..." />
+            <marker date="1495061289147" expanded="false" signature="11602:11882" ph="..." />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GAN/summary.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="355">
+          <caret line="45" column="0" selection-start-line="45" selection-start-column="0" selection-end-line="45" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>

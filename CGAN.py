@@ -383,10 +383,10 @@ class GAN4(object):
         '''model training'''
         with tf.variable_scope("G") as vs_g:
             # # CONDITION IN ALI STYLE, WHICH HAS MODE COLLPASE
-            # embed_out = slim.fully_connected(tf.concat([self.y_input,self.y_input_fake],0), self.latent_dim, activation_fn=tf.sigmoid)
+            # embed_out = slim.fully_connected(tf.concat([self.y_input,self.y_input_fake],0), self.latent_dim, activation_fn=None)
             # y_embed_real, y_embed_fake = tf.split(embed_out, 2)
             # zy = tf.concat([tf.concat([self.z_input, y_embed_real],1),tf.concat([self.z_input, y_embed_fake],1)], 0)
-            # h = slim.fully_connected(zy, self.latent_dim, activation_fn=tf.sigmoid)
+            # h = slim.fully_connected(zy, self.latent_dim, activation_fn=None)
             # h_real, h_fake = tf.split(h, 2) # x_fake is generated using h_real
             # CONDITION IN WGAN STYLE
             z_embed = slim.fully_connected(self.z_input, self.latent_dim, activation_fn=None)
@@ -402,6 +402,9 @@ class GAN4(object):
             # Pull away term in EBGAN, cosine distance
             z_d_real, z_d_gen = tf.split(z_d,2)
 
+            self.mi = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.z_input,logits=z_d_gen))
+            self.z_er = tf.reduce_mean(tf.sqrt(tf.squared_difference(self.z_input,tf.sigmoid(z_d_gen))))
+
             nom = tf.matmul(z_d_gen, tf.transpose(z_d_gen, perm=[1, 0]))
             denom = tf.sqrt(tf.reduce_sum(tf.square(z_d_gen), reduction_indices=[1], keep_dims=True))
             pt = tf.square(tf.transpose((nom / denom), (1, 0)) / denom)
@@ -411,7 +414,7 @@ class GAN4(object):
             # # CONDITION IN ALI STYLE, WHICH HAS MODE COLLPASE
             # z_real, z_fake = tf.split(z_d, 2)
             # din_zy = tf.concat([tf.concat([z_real, y_embed_real],1),tf.concat([z_real, y_embed_fake],1),tf.concat([z_fake, y_embed_real],1)], 0)
-            # din_zy = slim.fully_connected(din_zy, self.latent_dim, activation_fn=tf.sigmoid)
+            # din_zy = slim.fully_connected(din_zy, self.latent_dim, activation_fn=None)
             # CONDITION IN WGAN STYLE
             dz_embed = slim.fully_connected(z_d, self.latent_dim, activation_fn=None)
             dz_embed_real, dz_embed_fake = tf.split(dz_embed, 2)
@@ -426,9 +429,9 @@ class GAN4(object):
         self.loss_sr = tf.reduce_mean(tf.abs(x_sr - self.x_real))
         self.loss_sw = tf.reduce_mean(tf.abs(x_sw - self.x_real))
         self.loss_sf = tf.reduce_mean(tf.abs(x_sf - self.x_gen))
-        self.g_loss = self.loss_sf + self.pulling_term
-        d_loss = (self.loss_sr - self.loss_sw*self.k_t)
-        self.d_loss = d_loss - self.k_t * self.g_loss
+        self.g_loss = self.loss_sf + self.mi
+        d_loss = (self.loss_sr + tf.clip_by_value(1 - self.loss_sw,0.,1.)*0.5)
+        self.d_loss = d_loss - self.k_t * self.g_loss + self.mi
         self.balance = self.gamma * d_loss - self.loss_sf
         self.measure = d_loss + tf.abs(self.balance)
 
@@ -451,7 +454,8 @@ class GAN4(object):
             tf.summary.scalar("misc/d_lr", self.d_lr),
             tf.summary.scalar("misc/g_lr", self.g_lr),
             tf.summary.scalar("misc/balance", self.balance),
-            tf.summary.scalar("misc/balance", self.pulling_term),
+            tf.summary.scalar("misc/pulling_term", self.pulling_term),
+            tf.summary.scalar("misc/z_er", self.z_er),
         ])
         self.summary_writer = tf.summary.FileWriter(self.logdir)
         saver = tf.train.Saver()
@@ -472,7 +476,7 @@ class GAN4(object):
         sess = sv.prepare_or_wait_for_session(config=sess_config)
         x_fixed = self.data_loader.eval(session=sess)
         y_fixed = np.zeros([self.batch_size, self.n_attributes])
-        z_fixed = np.random.uniform(-1, 1, size=(self.batch_size, self.latent_dim))
+        z_fixed = np.random.uniform(0, 1, size=(self.batch_size, self.latent_dim))
         feed_dict_fix = {self.x_input: x_fixed, self.y_input: y_fixed, self.z_input: z_fixed}
 
         counter = 0
@@ -483,9 +487,9 @@ class GAN4(object):
                 counter += 1
                 x_input = self.X_train[i * self.batch_size:(i + 1) * self.batch_size]
                 y_input = self.y_train[i * self.batch_size:(i + 1) * self.batch_size]
-                z_input = np.random.uniform(-1, 1, size=(self.batch_size, self.latent_dim)).astype('float32')
+                z_input = np.random.uniform(0, 1, size=(self.batch_size, self.latent_dim)).astype('float32')
                 feed_dict = {self.x_input: x_input, self.y_input: y_input, self.z_input: z_input}
-                result = sess.run([self.loss_sr, self.loss_sw, self.loss_sf, self.d_loss, self.g_loss, self.measure, self.k_update, self.k_t, self.pulling_term], feed_dict)
+                result = sess.run([self.k_update, self.k_t, self.pulling_term, self.mi, self.z_er], feed_dict)
                 print(result)
                 if counter % self.snapshot_interval == 0:
                     summary = sess.run(self.summary_op,feed_dict)
@@ -501,7 +505,7 @@ class GAN4(object):
                                               255 * (x_sw_img[0:nrow].transpose((0, 2, 3, 1)) + 1) / 2,
                                               255 * (x_sf_img[0:nrow].transpose((0, 2, 3, 1)) + 1) / 2])
                     save_image(all_G_z, '{}/itr{}.png'.format(self.logdir, counter), nrow=nrow)
-                if counter in [1e2,1e4,1e5]:
+                if counter in [1e2, 1e3, 5e3, 1e4, 2e4, 3e4, 1e5, 2e5]:
                     snapshot_name = "%s_%s" % ('experiment', str(counter))
                     fn = saver.save(sess, "%s/%s.ckpt" % (self.modeldir, snapshot_name))
                     print("Model saved in file: %s" % fn)
