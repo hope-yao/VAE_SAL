@@ -89,7 +89,8 @@ def to_nhwc(image, data_format):
     return new_image
 
 def norm_img(image, data_format=None):
-    image = image/127.5 - 1.
+    # image = image/127.5 - 1.
+    image = image/(255./11) - 1.
     if data_format:
         image = to_nhwc(image, data_format)
     return image
@@ -132,6 +133,9 @@ def reshape(x, h, w, c, data_format):
         x = tf.reshape(x, [-1, h, w, c])
     return x
 
+def denorm_img(norm):
+    return (norm + 1)*(255./11)
+
 class GAN4(object):
     def activation(self, cfg):
         '''define activation function of the convolution'''
@@ -149,7 +153,7 @@ class GAN4(object):
         import h5py
         from random import sample
         import numpy as np
-        f = h5py.File(datadir+"/celeba.hdf5", "r")
+        f = h5py.File(datadir+"/rect_rectcrs0.hdf5", "r")
         data_key = f.keys()[0]
         data = np.asarray(f[data_key],dtype='float32') # normalized into (-1, 1)
         # data = (np.asarray(f[data_key],dtype='float32') / 255. - 0.5 )*2 # normalized into (-1, 1)
@@ -291,7 +295,7 @@ class GAN4(object):
         z = x = slim.fully_connected(x, z_num, activation_fn=None)
         return z
 
-    def BEGAN_dec(self,input,hidden_num ,act_func, input_channel = 3, data_format = 'NCHW', repeat_num = 4):
+    def BEGAN_dec(self,input,hidden_num ,act_func, output_channel = 3, data_format = 'NCHW', repeat_num = 4):
 
         # Decoder
         x = slim.fully_connected(input, np.prod([8, 8, hidden_num]), activation_fn=None)
@@ -303,7 +307,7 @@ class GAN4(object):
             if idx < repeat_num - 1:
                 x = upscale(x, 2, data_format)
 
-        out = slim.conv2d(x, input_channel, 3, 1, activation_fn=tf.tanh, data_format=data_format)
+        out = slim.conv2d(x, num_outputs=output_channel, kernel_size=3, stride = 1, activation_fn=None, data_format=data_format)
 
         return out
 
@@ -362,15 +366,15 @@ class GAN4(object):
         self.vae_lr = cfg['vae_lr']
         self.snapshot_interval = cfg['snapshot_interval']
 
-        from data_loader import get_loader
-        data_path = '/home/hope-yao/Documents/Data/img_align_celeba'
-        batch_size = 16
-        input_scale_size = 64
-        data_format = 'NCHW'
-        split = 'train'
-        self.data_loader = get_loader(
-            data_path, batch_size, input_scale_size,
-            data_format, split)
+        # from data_loader import get_loader
+        # data_path = '/home/hope-yao/Documents/Data/img_align_celeba'
+        # batch_size = 16
+        # input_scale_size = 64
+        # data_format = 'NCHW'
+        # split = 'train'
+        # self.data_loader = get_loader(
+        #     data_path, batch_size, input_scale_size,
+        #     data_format, split)
         # self.x_input = self.data_loader
         # self.x_input_fake = tf.random_uniform([self.batch_size, self.n_ch_in, self.img_size, self.img_size], minval=-1.0, maxval=1.0)
         self.y_input_fake = tf.cast(tf.multinomial(tf.zeros([self.batch_size, 2]), self.n_attributes), tf.float32)
@@ -394,11 +398,11 @@ class GAN4(object):
             h = slim.fully_connected(zy, self.latent_dim, activation_fn=None)
             h_real, h_fake = tf.split(h, 2) # x_fake is generated using h_real
 
-            self.x_gen = self.BEGAN_dec(h_real, hidden_num=128 ,act_func=self.act_func, input_channel=3, data_format='NCHW', repeat_num=4)
+            self.x_gen = self.BEGAN_dec(h_real, hidden_num=16 ,act_func=self.act_func, output_channel=self.n_ch_in, data_format='NCHW', repeat_num=4)
         self.G_var = tf.contrib.framework.get_variables(vs_g)
         with tf.variable_scope("D") as vs_d:
             self.x_real = norm_img(self.x_input)
-            z_d = self.BEGAN_enc(tf.concat([self.x_real, self.x_gen], 0), act_func=self.act_func, hidden_num = 128, z_num = 64, repeat_num = 4, data_format = 'NCHW', reuse = False)
+            z_d = self.BEGAN_enc(tf.concat([self.x_real,self.x_gen],0), act_func=self.act_func, hidden_num = 16, z_num = self.n_attributes, repeat_num = 4, data_format = 'NCHW', reuse = False)
             # Pull away term in EBGAN, cosine distance
             z_d_real, z_d_gen = tf.split(z_d,2)
 
@@ -418,8 +422,9 @@ class GAN4(object):
             zy = tf.concat([tf.concat([dz_embed_real, self.y_input],1),tf.concat([dz_embed_real, self.y_input_fake],1),tf.concat([dz_embed_fake, self.y_input],1)], 0)
             din_zy = slim.fully_connected(zy, self.latent_dim, activation_fn=None)
 
-            d_out = self.BEGAN_dec(din_zy, hidden_num=128 ,act_func=self.act_func, input_channel=3, data_format='NCHW', repeat_num=4)
-            x_sr, x_sw, x_sf = tf.split(d_out, 3)
+            d_out = self.BEGAN_dec(z_d, hidden_num=16 ,act_func=self.act_func, output_channel=self.n_ch_in, data_format='NCHW', repeat_num=4)
+            x_sr, x_sf = tf.split(d_out, 2)
+            x_sw=x_sf
         self.D_var = tf.contrib.framework.get_variables(vs_d)
         self.x_sr, self.x_sw, self.x_sf = x_sr, x_sw, x_sf
 
@@ -470,17 +475,16 @@ class GAN4(object):
         sess_config = tf.ConfigProto(allow_soft_placement=True,
                                     gpu_options=gpu_options)
         sess = sv.prepare_or_wait_for_session(config=sess_config)
-        x_fixed = self.data_loader.eval(session=sess)
-        y_fixed = np.zeros([self.batch_size, self.n_attributes])
-        z_fixed = np.random.uniform(-1, 1, size=(self.batch_size, self.latent_dim))
-        feed_dict_fix = {self.x_input: x_fixed, self.y_input: y_fixed, self.z_input: z_fixed}
 
         counter = 0
         (self.X_train, self.y_train), (self.X_test, self.y_test) = self.CelebA(self.datadir)
+        x_fixed = self.X_test[0 * self.batch_size:(0 + 1) * self.batch_size]
+        y_fixed = self.y_test[0 * self.batch_size:(0 + 1) * self.batch_size]
+        z_fixed = np.random.uniform(-1, 1, size=(self.batch_size, self.latent_dim))
+        feed_dict_fix = {self.x_input: x_fixed, self.y_input: y_fixed, self.z_input: z_fixed}
         for epoch in range(self.epochs):
             it_per_ep = len(self.X_train) / self.batch_size
             for i in tqdm(range(it_per_ep)):
-                counter += 1
                 x_input = self.X_train[i * self.batch_size:(i + 1) * self.batch_size]
                 y_input = self.y_train[i * self.batch_size:(i + 1) * self.batch_size]
                 z_input = np.random.uniform(-1, 1, size=(self.batch_size, self.latent_dim)).astype('float32')
@@ -495,16 +499,19 @@ class GAN4(object):
                     x_real_img, x_gen_img, x_sr_img, x_sw_img, x_sf_img = \
                         sess.run([self.x_real, self.x_gen, self.x_sr, self.x_sw, self.x_sf], feed_dict_fix)
                     nrow = 12
-                    all_G_z = np.concatenate([255 * (x_real_img[0:nrow].transpose((0, 2, 3, 1)) + 1) / 2,
-                                              255 * (x_gen_img[0:nrow].transpose((0, 2, 3, 1)) + 1) / 2,
-                                              255 * (x_sr_img[0:nrow].transpose((0, 2, 3, 1)) + 1) / 2,
-                                              255 * (x_sw_img[0:nrow].transpose((0, 2, 3, 1)) + 1) / 2,
-                                              255 * (x_sf_img[0:nrow].transpose((0, 2, 3, 1)) + 1) / 2])
+                    all_G_z = np.concatenate([
+                        denorm_img(x_real_img[0:nrow].transpose([0,2,3,1])),
+                        denorm_img(x_gen_img[0:nrow].transpose([0,2,3,1])),
+                        denorm_img(x_sr_img[0:nrow].transpose([0, 2, 3, 1])),
+                        denorm_img(x_sw_img[0:nrow].transpose([0, 2, 3, 1])),
+                        denorm_img(x_sf_img[0:nrow].transpose([0, 2, 3, 1]))
+                    ])
                     save_image(all_G_z, '{}/itr{}.png'.format(self.logdir, counter), nrow=nrow)
                 if counter in [1e2,1e4,1e5]:
                     snapshot_name = "%s_%s" % ('experiment', str(counter))
                     fn = saver.save(sess, "%s/%s.ckpt" % (self.modeldir, snapshot_name))
                     print("Model saved in file: %s" % fn)
+                counter += 1
 
 if __name__ == "__main__":
 
@@ -512,12 +519,12 @@ if __name__ == "__main__":
            'n_blocks': 4,  # there are n_blocks convolution and pooling structure
             'act_func': 'ELU', #ELU, ReLu
            'input_dim': (64, 64),
-           'n_channels': 3,
-           'n_attributes': 40,
+           'n_channels': 1,
+           'n_attributes': 2,
            'n_filters': 32,
            'filter_size': (3,3),
            'max_epochs': 200000,
-           'latent_dim': 64,
+           'latent_dim': 2,
            'vae_optimizer': 'adadelta',
            'vae_lr': 8e-1,
            'g_lr': 0.00008,
@@ -529,7 +536,7 @@ if __name__ == "__main__":
            'k_t': 0.0,
            # 'learning_rate': lr_schedule,
            'vae': False,
-           'datadir': '/home/hope-yao/Documents/Data',
+           'datadir': '/home/doi5/Documents/Hope',
            'pre_train': 0, # how many steps to pretrain the VAE
            'snapshot_interval': 10,
            }
