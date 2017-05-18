@@ -416,7 +416,7 @@ class GAN4(object):
             # din_zy = tf.concat([tf.concat([z_real, y_embed_real],1),tf.concat([z_real, y_embed_fake],1),tf.concat([z_fake, y_embed_real],1)], 0)
             # din_zy = slim.fully_connected(din_zy, self.latent_dim, activation_fn=None)
             # CONDITION IN WGAN STYLE
-            dz_embed = slim.fully_connected(z_d, self.latent_dim, activation_fn=None)
+            dz_embed = slim.fully_connected(tf.sigmoid(z_d), self.latent_dim, activation_fn=None)
             dz_embed_real, dz_embed_fake = tf.split(dz_embed, 2)
             zy = tf.concat([tf.concat([dz_embed_real, self.y_input],1),tf.concat([dz_embed_real, self.y_input_fake],1),tf.concat([dz_embed_fake, self.y_input],1)], 0)
             din_zy = slim.fully_connected(zy, self.latent_dim, activation_fn=None)
@@ -430,7 +430,7 @@ class GAN4(object):
         self.loss_sw = tf.reduce_mean(tf.abs(x_sw - self.x_real))
         self.loss_sf = tf.reduce_mean(tf.abs(x_sf - self.x_gen))
         self.g_loss = self.loss_sf + self.mi
-        d_loss = (self.loss_sr + tf.clip_by_value(1 - self.loss_sw,0.,1.)*0.5)
+        d_loss = self.loss_sr -  self.loss_sw*self.k_t
         self.d_loss = d_loss - self.k_t * self.g_loss + self.mi
         self.balance = self.gamma * d_loss - self.loss_sf
         self.measure = d_loss + tf.abs(self.balance)

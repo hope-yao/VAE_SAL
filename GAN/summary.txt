@@ -41,6 +41,4 @@
 26. GAN_2017_05_16_09_31_16 in doi2, CGAN+Pulling term will have very obvious artifacts. PT is reducing to 0, but not sure how much benefits it brings.
 
 27. GAN_2017_05_16_22_04_18 in doi2, CGAN+MI+Z(-1,1) will result in oscilating generation but PT is reducing to 0. In this case decoder in D and G have different z range, because cannot go to log(-1) in crossentropy
-    GAN_2017_05_17_11_29_25 in doi2, CGAN+MI+Z(0,1)+0.5s_w. s_r and s_w are totally different. Sigmoid may loss the uncorrelation.
-
-
+    GAN_2017_05_17_11_29_25 in doi2, GAN_2017_05_18_13_56_45 in doi2, CGAN+MI+Z(0,1)+kt*s_w. Sigmoid may loss the uncorrelation.
